@@ -137,7 +137,7 @@ public class App implements Testable
 
 		String createTransaction_Performed =" CREATE TABLE Transaction_Performed("+
                                       "tid INTEGER, "+
-                                      "tdate VARCHAR(100), "+
+                                      "tdate DATE, "+
                                       "trans_type VARCHAR(100),"+
                                       "amount REAL,"+
                                       "tfee REAL,"+
