@@ -91,28 +91,6 @@ public class App implements Testable
 
 
 	/**
-	 * Destroy all of the tables in your DB.
-	 * @return a string "r", where r = 0 for success, 1 for error.
-	 */
-	String dropTables()
-	{
-		try (Statement statement = _connection.createStatement()) {
-			statement.executeUpdate("DROP TABLE Transaction_Performed");
-			statement.executeUpdate("DROP TABLE Co_owns");
-			statement.executeUpdate("DROP TABLE Pocket");
-			statement.executeUpdate("DROP TABLE Account_Owns");
-			statement.executeUpdate("DROP TABLE Customer");
-			statement.executeUpdate("DROP TABLE Date");
-			return "0";
-		}
-		catch( SQLException e )
-		{
-			System.err.println( e.getMessage() );
-			return "1";
-		}
-	}
-
-	/**
 	 * Create all of your tables in your DB.
 	 * @return a string "r", where r = 0 for success, 1 for error.
 	 */
@@ -120,59 +98,56 @@ public class App implements Testable
 	{
 		String createCustomer = "CREATE TABLE Customer(" +
                             "name VARCHAR(100)," +
-                            "taxid INTEGER," +
+                            "taxid VARCHAR(100)," +
                             "address VARCHAR(100)," + 
                             "PIN INTEGER," +
                             "PRIMARY KEY(taxid))";
 
 		String createAccount_Owns = "CREATE TABLE Account_Owns("+
-							"aid INTEGER, "+
+							"aid VARCHAR(100), "+
                             "branch VARCHAR(100),"+
                             "acc_type VARCHAR(100), "+
                             "balance REAL, "+
                             "interest_rate  REAL, "+
                             "interest REAL, "+
-                            "taxid INT NOT NULL"
+                            "taxid VARCHAR(100) NOT NULL"
                             "PRIMARY KEY(aid)"+
                             "FOREIGN KEY(taxid) REFERENCES Customer(taxid))";
 
 		String createTransaction_Performed =" CREATE TABLE Transaction_Performed("+
-                                      "tid INTEGER, "+
+                                      "tid VARCHAR(100), "+
                                       "tdate DATE, "+
                                       "trans_type VARCHAR(100),"+
                                       "amount REAL,"+
                                       "tfee REAL,"+
                                       "checknum INTEGER,"+
-                                      "acc_to INTEGER NOT NULL,"+
-                                      "acc_from INTEGER,"+
+                                      "acc_to VARCHAR(100) NOT NULL,"+
+                                      "acc_from VARCHAR(100),"+
                                       "PRIMARY KEY(tid),"+
-                                      "FOREIGN KEY(acc_to) REFERENCES Account(aid), "+
-                                      "FOREIGN KEY(acc_from) REFERENCES Account(aid))";
+                                      "FOREIGN KEY(acc_to) REFERENCES Account_Owns(aid), "+
+                                      "FOREIGN KEY(acc_from) REFERENCES Account_Owns(aid))";
 
       	String createCo_owns= "CREATE TABLE Co_owns("+
-                      "aid INTEGER,"+
-                      "taxid INTEGER,"+
+                      "aid VARCHAR(100),"+
+                      "taxid VARCHAR(100),"+
                       "PRIMARY KEY (aid, taxid),"+
-                      "FOREIGN KEY(aid) REFERENCES Account(aid),"+
+                      "FOREIGN KEY(aid) REFERENCES Account_Owns(aid),"+
                       "FOREIGN KEY (taxid) REFERENCES Customer(taxid))";
 
       	String createPocket = "CREATE TABLE Pocket("+ 
-                      "paid INTEGER,"+
-                      "aid INTEGER NOT NULL,"+
+                      "paid VARCHAR(100),"+
+                      "aid VARCHAR(100) NOT NULL,"+
                       "pocket_fee REAL,"+
                       "PRIMARY KEY(paid),"+
-                      "FOREIGN KEY(paid) REFERENCES Account(aid) ON DELETE CASCADE)," +
-                      "FOREIGN KEY(aid) REFERENCES Account(aid)";
+                      "FOREIGN KEY(paid) REFERENCES Account_Owns(aid) ON DELETE CASCADE)," +
+                      "FOREIGN KEY(aid) REFERENCES Account_Owns(aid)";
 
         String createDate = "CREATE TABLE Date("+
-        				"year INT,"+
-        				"month INT,"+
-        				"day INT,"+
-        				"tasksCompleted INT,"+
-        				"PRIMARY KEY (year, month, day));"
+        				"date DATE,"+
+        				"PRIMARY KEY (date));"
 
 		String createClosed = "CREATE TABLE Closed("+
-							"aid INT,"+
+							"aid VARCHAR(100),"+
 							"PRIMARY KEY(aid),"+
 							"FOREIGN KEY(aid) REFERENCES Account_Owns(aid))";
 
