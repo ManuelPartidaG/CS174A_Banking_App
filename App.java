@@ -287,6 +287,7 @@ public class App implements Testable
 		//1. check if there is an enry in Account_Owns where taxid=tin and aid=accountID
 		//2. if there is not, make an entry in Customer(name, ttin, address, 0)
 		//3. then make an entry into Co_owns(accountId, tin)
+		return "0";
 
 	}
 
@@ -308,6 +309,7 @@ public class App implements Testable
 		//check that account is not closed
 		//2. call topUp(id, linkedinitalTopUP)
 		//3. insert into Account_Owns
+		return "0";
 	}
 
 	/**
@@ -325,6 +327,7 @@ public class App implements Testable
 		//2. update the main account's balance to be -amount CHECK if the balance is above $0.01 
 		//3. update the pocket account's balance in the Account_owns table to be +amount 
 		//4. make an entry in Transaction_Performed
+		return "0";
 	}
 
 	/**
@@ -341,6 +344,7 @@ public class App implements Testable
 		//check that account is not in closed
 		//2. check that accountId corresponds to a savings account or a checking account 
 		//3. insert into Transaction_Performed
+		return "0";
 	}
 
 		/**
@@ -352,6 +356,7 @@ public class App implements Testable
 	 */
 	String showBalance( String accountId ){
 		//1. select balance from Account_Owns where aid=accountId
+		return "0";
 	}
 		/**
 	 * Move a specified amount of money from one pocket account to another pocket account.
@@ -368,6 +373,7 @@ public class App implements Testable
 		//check balance after transaction, see if it should be closed
 		//1. update Account_Owns tables for both accounts
 		//2. insert into Transaction_Performed 
+		return "0";
 	}
 	/**
 	 * Generate list of closed accounts.
@@ -377,12 +383,14 @@ public class App implements Testable
 	 */
 	String listClosedAccounts(){
 		//1. select from closed 
+		return "0";
 	}
 
 	String closeAccount(String aid){
 		//1. check if account has a pocket account by checking if it exists in Pocket
 		//2. if it does, insert pocket account into closed
-		//3. insert aid account into closed 
+		//3. insert aid account into closed
+		return  "0"; 
 	}
 
 }
