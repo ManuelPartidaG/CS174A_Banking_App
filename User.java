@@ -18,7 +18,7 @@ public class User {
 
   final static String DB_USER = "c##manuelpartidagomez";
   final static String DB_PASSWORD = "9599663";
-
+    //test
  /*
   * The method gets a database connection using
   * oracle.jdbc.pool.OracleDataSource. It also sets some connection
