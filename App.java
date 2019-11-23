@@ -94,79 +94,100 @@ public class App implements Testable
 	 * Create all of your tables in your DB.
 	 * @return a string "r", where r = 0 for success, 1 for error.
 	 */
-	String createTables()
-	{
-		String createCustomer = "CREATE TABLE Customer(" +
-                            "name VARCHAR(100)," +
-                            "taxid VARCHAR(100)," +
-                            "address VARCHAR(100)," + 
-                            "PIN INTEGER," +
-                            "PRIMARY KEY(taxid))";
+    public String createTables()
+    {
+        String createCustomer = "CREATE TABLE Customer(" +
+                "name VARCHAR(100)," +
+                "taxid VARCHAR(100)," +
+                "address VARCHAR(100)," +
+                "PIN INTEGER," +
+                "PRIMARY KEY(taxid))";
 
-		String createAccount_Owns = "CREATE TABLE Account_Owns("+
-							"aid VARCHAR(100), "+
-                            "branch VARCHAR(100),"+
-                            "acc_type VARCHAR(100), "+
-                            "balance REAL, "+
-                            "interest_rate  REAL, "+
-                            "interest REAL, "+
-                            "taxid VARCHAR(100) NOT NULL"
-                            "PRIMARY KEY(aid)"+
-                            "FOREIGN KEY(taxid) REFERENCES Customer(taxid))";
+        String createAccount_Owns = "CREATE TABLE Account_Owns("+
+                "aid VARCHAR(100), "+
+                "branch VARCHAR(100),"+
+                "acc_type VARCHAR(100), "+
+                "balance REAL, "+
+                "interest_rate  REAL, "+
+                "interest REAL, "+
+                "taxid VARCHAR(100) NOT NULL,"+
+                "PRIMARY KEY(aid),"+
+                "FOREIGN KEY(taxid) REFERENCES Customer(taxid))";
 
-		String createTransaction_Performed =" CREATE TABLE Transaction_Performed("+
-                                      "tid VARCHAR(100), "+
-                                      "tdate DATE, "+
-                                      "trans_type VARCHAR(100),"+
-                                      "amount REAL,"+
-                                      "tfee REAL,"+
-                                      "checknum INTEGER,"+
-                                      "acc_to VARCHAR(100) NOT NULL,"+
-                                      "acc_from VARCHAR(100),"+
-                                      "PRIMARY KEY(tid),"+
-                                      "FOREIGN KEY(acc_to) REFERENCES Account_Owns(aid), "+
-                                      "FOREIGN KEY(acc_from) REFERENCES Account_Owns(aid))";
+        String createTransaction_Performed =" CREATE TABLE Transaction_Performed("+
+                "tid VARCHAR(100), "+
+                "tdate DATE, "+
+                "trans_type VARCHAR(100),"+
+                "amount REAL,"+
+                "tfee REAL,"+
+                "checknum INTEGER,"+
+                "acc_to VARCHAR(100) NOT NULL,"+
+                "acc_from VARCHAR(100),"+
+                "PRIMARY KEY(tid),"+
+                "FOREIGN KEY(acc_to) REFERENCES Account_Owns(aid), "+
+                "FOREIGN KEY(acc_from) REFERENCES Account_Owns(aid))";
 
-      	String createCo_owns= "CREATE TABLE Co_owns("+
-                      "aid VARCHAR(100),"+
-                      "taxid VARCHAR(100),"+
-                      "PRIMARY KEY (aid, taxid),"+
-                      "FOREIGN KEY(aid) REFERENCES Account_Owns(aid),"+
-                      "FOREIGN KEY (taxid) REFERENCES Customer(taxid))";
+        String createCo_owns= "CREATE TABLE Co_owns("+
+                "aid VARCHAR(100),"+
+                "taxid VARCHAR(100),"+
+                "PRIMARY KEY (aid, taxid),"+
+                "FOREIGN KEY(aid) REFERENCES Account_Owns(aid),"+
+                "FOREIGN KEY (taxid) REFERENCES Customer(taxid))";
 
-      	String createPocket = "CREATE TABLE Pocket("+ 
-                      "paid VARCHAR(100),"+
-                      "aid VARCHAR(100) NOT NULL,"+
-                      "pocket_fee REAL,"+
-                      "PRIMARY KEY(paid),"+
-                      "FOREIGN KEY(paid) REFERENCES Account_Owns(aid) ON DELETE CASCADE)," +
-                      "FOREIGN KEY(aid) REFERENCES Account_Owns(aid)";
+        String createPocket = "CREATE TABLE Pocket("+
+                "paid VARCHAR(100),"+
+                "aid VARCHAR(100) NOT NULL,"+
+                "pocket_fee REAL,"+
+                "PRIMARY KEY(paid),"+
+                "FOREIGN KEY(paid) REFERENCES Account_Owns(aid) ON DELETE CASCADE," +
+                "FOREIGN KEY(aid) REFERENCES Account_Owns(aid))";
 
-        String createDate = "CREATE TABLE Date("+
-        				"date DATE,"+
-        				"PRIMARY KEY (date));"
+        String createDate = "CREATE TABLE Current_Date("+
+                "cdate DATE,"+
+                "PRIMARY KEY (cdate))";
 
-		String createClosed = "CREATE TABLE Closed("+
-							"aid VARCHAR(100),"+
-							"PRIMARY KEY(aid),"+
-							"FOREIGN KEY(aid) REFERENCES Account_Owns(aid))";
+        String createClosed = "CREATE TABLE Closed("+
+                "aid VARCHAR(100),"+
+                "PRIMARY KEY(aid),"+
+                "FOREIGN KEY(aid) REFERENCES Account_Owns(aid))";
 
         try (Statement statement = _connection.createStatement()) {
-			statement.executeUpdate(createCustomer);
-			statement.executeUpdate(createAccount_Owns);
-			statement.executeUpdate(createPocket);
-			statement.executeUpdate(createCo_owns);
-			statement.executeUpdate(createTransaction_Performed);
-			statement.executeUpdate(createClosed);	
-			statement.executeUpdate(createDate);		
-			return "0";
-		}
-		catch( SQLException e )
-		{
-			System.err.println( e.getMessage() );
-			return "1";
-		}					
-	}
+            statement.executeUpdate(createCustomer);
+            statement.executeUpdate(createAccount_Owns);
+            statement.executeUpdate(createPocket);
+            statement.executeUpdate(createCo_owns);
+            statement.executeUpdate(createTransaction_Performed);
+            statement.executeUpdate(createClosed);
+            statement.executeUpdate(createDate);
+            return "0";
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+    }
+    
+    public String dropTables()
+    {
+        try (Statement statement = _connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE Transaction_Performed");
+            statement.executeUpdate("DROP TABLE Co_owns");
+            statement.executeUpdate("DROP TABLE Pocket");
+            statement.executeUpdate("DROP TABLE Closed");
+            statement.executeUpdate("DROP TABLE Account_Owns");
+            statement.executeUpdate("DROP TABLE Customer");
+            statement.executeUpdate("DROP TABLE Current_Date");
+            return "0";
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+    }
+    
+    
 
 	/**
 	 * Set system's date.
@@ -175,7 +196,7 @@ public class App implements Testable
 	 * @param day Valid day, from 1 to 31, depending on the month (and if it's a leap year).
 	 * @return a string "r yyyy-mm-dd", where r = 0 for success, 1 for error; and yyyy-mm-dd is the new system's date, e.g. 2012-09-16.
 	 */
-	String setDate( int year, int month, int day ){
+	public String setDate( int year, int month, int day ){
 		String insertDate = "INSERT INTO Date(year, month, day)"+
 									"VALUES(?,?,?");
 		try (PreparedStatement statement = _connection.prepareStatement()) {
@@ -257,7 +278,7 @@ public class App implements Testable
 	 * @param address New customer's address.
 	 * @return a string "r", where r = 0 for success, 1 for error.
 	 */
-	String createCustomer( String accountId, String tin, String name, String address ){
+	public String createCustomer( String accountId, String tin, String name, String address ){
 		//check that entry with aid=accountId exists in Account_Owns
 		//1. check if there is an enry in Account_Owns where taxid=tin and aid=accountID
 		//2. if there is not, make an entry in Customer(name, ttin, address, 0)
@@ -279,7 +300,7 @@ public class App implements Testable
 	 *         balance is the account's initial balance with up to 2 decimal places (e.g. 1000.12, as with %.2f); and
 	 *         tin is the Tax ID of account's primary owner.
 	 */
-	String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
+	public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
 		//1. check that linkedId account exists in Account_owns
 		//check that account is not closed
 		//2. call topUp(id, linkedinitalTopUP)
@@ -296,7 +317,7 @@ public class App implements Testable
 	 *         linkedNewBalance is the new balance of linked account, with up to 2 decimal places (e.g. with %.2f); and
 	 *         pocketNewBalance is the new balance of the pocket account.
 	 */
-	String topUp( String accountId, double amount ){
+	public String topUp( String accountId, double amount ){
 		//1. select aid from Pocket where paid=accountID 
 		//check account is not closed
 		//2. update the main account's balance to be -amount CHECK if the balance is above $0.01 
@@ -314,7 +335,7 @@ public class App implements Testable
 	 *         old is the old account balance, with up to 2 decimal places (e.g. 1000.12, as with %.2f); and
 	 *         new is the new account balance, with up to 2 decimal places.
 	 */
-	String deposit( String accountId, double amount ){
+	public String deposit( String accountId, double amount ){
 		//1. update the account 
 		//check that account is not in closed
 		//2. check that accountId corresponds to a savings account or a checking account 
@@ -329,7 +350,7 @@ public class App implements Testable
 	 *         r = 0 for success, 1 for error; and
 	 *         balance is the account balance, with up to 2 decimal places (e.g. with %.2f).
 	 */
-	String showBalance( String accountId ){
+	public String showBalance( String accountId ){
 		//1. select balance from Account_Owns where aid=accountId
 		return "0";
 	}
@@ -343,7 +364,7 @@ public class App implements Testable
 	 *         fromNewBalance is the new balance of the source pocket account, with up to 2 decimal places (e.g. with %.2f); and
 	 *         toNewBalance is the new balance of destination pocket account, with up to 2 decimal places.
 	 */
-	String payFriend( String from, String to, double amount ){
+	public String payFriend( String from, String to, double amount ){
 		//CHECK if account has enough balance and that account is not closed
 		//check balance after transaction, see if it should be closed
 		//1. update Account_Owns tables for both accounts
@@ -356,12 +377,12 @@ public class App implements Testable
 	 *         r = 0 for success, 1 for error; and
 	 *         id1 id2 ... idn is a list of space-separated closed account IDs.
 	 */
-	String listClosedAccounts(){
+	public String listClosedAccounts(){
 		//1. select from closed 
 		return "0";
 	}
 
-	String closeAccount(String aid){
+	public String closeAccount(String aid){
 		//1. check if account has a pocket account by checking if it exists in Pocket
 		//2. if it does, insert pocket account into closed
 		//3. insert aid account into closed
