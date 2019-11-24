@@ -214,6 +214,7 @@ public class App implements Testable
 	}
 
 
+
 	/**
 	 * Example of one of the testable functions.
 	 */
@@ -223,72 +224,97 @@ public class App implements Testable
 		return "0 it works!";
 	}
 
-/**
-	 * Create a new checking or savings account.
-	 * If customer is new, then their name and address should be provided.
-	 * @param accountType New account's checking or savings type.
-	 * @param id New account's ID.
-	 * @param initialBalance Initial account balance.
-	 * @param tin Account's owner Tax ID number - it may belong to an existing or new customer.
-	 * @param name [Optional] If customer is new, this is the customer's name.
-	 * @param address [Optional] If customer is new, this is the customer's address.
-	 * @return a string "r aid type balance tin", where
-	 *         r = 0 for success, 1 for error;
-	 *         aid is the new account id;
-	 *         type is the new account's type (see the enum codes above, e.g. INTEREST_CHECKING);
-	 *         balance is the account's initial balance with 2 decimal places (e.g. 1000.34, as with %.2f); and
-	 *         tin is the Tax ID of account's primary owner.
-	 */
-	@Override
-	public String createCheckingSavingsAccount( AccountType accountType, String id, double initialBalance, String tin, String name, String address )
-	{
-		// check if initial balance is going to be enough 
-		//1. check if Customer with taxid = tin exists in  Customer table 
-		//2. if customer with taxid =tin deos not exist, then call this.createCustomer(id,tin, name, address)
-		//3. insert into transaction_performed the deposit of intial balance 
+  public String createCheckingSavingsAccount( AccountType accountType, String id, double initialBalance, String tin, String name, String address )
+    {
+        // check if initial balance is going to be enough
+        if(initialBalance<1000)
+            return "1 ";
+        //1. check if Customer with taxid = tin exists in  Customer table
+        String checkCustomer = "SELECT C.taxid FROM Customer C WHERE C.taxid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkCustomer)) {
+            statement.setString(1,tin);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if(!resultSet.next()) {
+                    String createCustomer = "INSERT INTO Customer (name, taxid, address, PIN)"+
+                            "VALUES(?,?,?,1234)";
+                    try(PreparedStatement s = _connection.prepareStatement(createCustomer)) {
+                        s.setString(1, name);
+                        s.setString(2, tin);
+                        s.setString(3, address);
+                        s.executeUpdate();
+                    }
+                }
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+        //2. if customer with taxid =tin deos not exist, then call this.createCustomer(id,tin, name, address)
+        //3. insert into transaction_performed the deposit of intial balance
 
+        String createAccount = "INSERT INTO Account_Owns(aid, branch, acc_type, balance, interest_rate, interest, taxid)"+
+                "VALUES(?, ?, ?, ?, ?, 0, ? )";
+        try(PreparedStatement statement = _connection.prepareStatement(createAccount)){
 
-		String createAccount = "INSERT INTO Account_Owns(aid, branch, acc_type, balance, interest_rate, interest, taxid)"+
-								"VALUES(?, ?, ?, ?, ?, 0, ? )";
-		try(PreparedStatement statement = _connection.prepareStatement()){
-			statement.executeUpdate(createAccount);
-			statement.setInt(1,id);
-			statement.setString("Isla Vista");
-			statement.setString(3,accountType);
-			statement.setDouble(4, intialBlance);
-			tatement.setInt(7, tin);
-			if(accountType.equals("Interest-Checking")){
-				statement.setDouble(5,3.0);
-			}
-			else if (accountType.equals("Savings")){
-				statement.setDouble(5, 4.8);
-			}
-			else{
-				statement.setDouble(5,0.0);
-			}
-			return "0 " + id + " " + accountType + " " + initialBalance + " " + tin;
-		}
-
-	}
-	/**
-	 * Create a new customer and link them to an existing checking or saving account.
-	 * @param accountId Existing checking or saving account.
-	 * @param tin New customer's Tax ID number.
-	 * @param name New customer's name.
-	 * @param address New customer's address.
-	 * @return a string "r", where r = 0 for success, 1 for error.
-	 */
-	public String createCustomer( String accountId, String tin, String name, String address ){
-		//check that entry with aid=accountId exists in Account_Owns
-		//1. check if there is an enry in Account_Owns where taxid=tin and aid=accountID
-		//2. if there is not, make an entry in Customer(name, ttin, address, 0)
-		//3. then make an entry into Co_owns(accountId, tin)
-		return "0";
-
-	}
-
-/**
-	 * Create a new pocket account.
+            statement.setString(1,id);
+            statement.setString(2,"Isla Vista");
+            statement.setString(3,accountType.name());
+            statement.setDouble(4, initialBalance);
+            statement.setString(6, tin);
+            if(accountType.equals("INTEREST_CHECKING")){
+                statement.setDouble(5,3.0);
+            }
+            else if (accountType.equals("SAVINGS")){
+                statement.setDouble(5, 4.8);
+            }
+            else{
+                statement.setDouble(5,0.0);
+            }
+            statement.executeUpdate();
+            this.logTransaction(tin,"Deposit",initialBalance,0,null,id, null );
+            return "0 " + id + " " + accountType + " " + initialBalance + " " + tin;
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+            return "1 ";
+        }
+    }
+    public String createCustomer( String accountId, String tin, String name, String address ){
+        //check that entry with aid=accountId exists in Account_Owns
+        //1. check if there is an entry in Account_Owns where taxid=tin and aid=accountID
+        String checkCustomer = "SELECT * FROM Account_Owns A WHERE A.taxid = ? AND A.aid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkCustomer)) {
+            statement.setString(1,tin);
+            statement.setString(2,accountId);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if(!resultSet.next()) {
+                    String createCustomer = "INSERT INTO Customer (name, taxid, address, PIN)"+
+                            "VALUES(?,?,?,1234)";
+                    try(PreparedStatement s = _connection.prepareStatement(createCustomer)) {
+                        s.setString(1, name);
+                        s.setString(2, tin);
+                        s.setString(3, address);
+                        s.executeUpdate();
+                    }
+                    String createCoOwner= "INSERT INTO Co_owns (aid, taxid) VALUES (?,?)";
+                    try(PreparedStatement s = _connection.prepareStatement(createCoOwner)) {
+                        s.setString(1, accountId);
+                        s.setString(2, tin);
+                        s.executeUpdate();
+                    }
+                }
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+        //2. if there is not, make an entry in Customer(name, ttin, address, 0)
+        //3. then make an entry into Co_owns(accountId, tin)
+        return "0";
+    }
 	 * @param id New account's ID.
 	 * @param linkedId Linked savings or checking account ID.
 	 * @param initialTopUp Initial balance to be deducted from linked account and deposited into new pocket account.
@@ -389,4 +415,34 @@ public class App implements Testable
 		return  "0"; 
 	}
 
+    public void logTransaction(String tid, String trans_type, double amount, double tfee, String checknum, String acc_to, String acc_from){
+        java.util.Date utilDate = new java.util.Date();
+        java.sql.Date tdate=new java.sql.Date(utilDate.getTime());
+        try (Statement statement = _connection.createStatement()) {
+            try (ResultSet resultSet = statement
+                    .executeQuery("SELECT cdate FROM Current_Date")) {
+                while (resultSet.next())
+                    tdate = resultSet.getDate(1);
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+        String insertTransaction= "INSERT INTO Transaction_Performed (tid, tdate, trans_type, amount, tfee, checknum, acc_to, acc_from)"+
+                "VALUES (?,?,?,?,?,?,?,?)";
+        try (PreparedStatement statement = _connection.prepareStatement(insertTransaction)) {
+            statement.setString(1,tid);
+            statement.setDate(2,tdate);
+            statement.setString(3,trans_type);
+            statement.setDouble(4,amount);
+            statement.setDouble(5,tfee);
+            statement.setString(6,checknum);
+            statement.setString(7,acc_to);
+            statement.setString(8,acc_from);
+            statement.executeUpdate();
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+        }
+    }
 }
