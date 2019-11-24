@@ -90,11 +90,7 @@ public class App implements Testable
 	}
 
 
-	/**
-	 * Create all of your tables in your DB.
-	 * @return a string "r", where r = 0 for success, 1 for error.
-	 */
-    public String createTables()
+   public String createTables()
     {
         String createCustomer = "CREATE TABLE Customer(" +
                 "name VARCHAR(100)," +
@@ -120,7 +116,7 @@ public class App implements Testable
                 "trans_type VARCHAR(100),"+
                 "amount REAL,"+
                 "tfee REAL,"+
-                "checknum INTEGER,"+
+                "checknum VARCHAR(100),"+
                 "acc_to VARCHAR(100) NOT NULL,"+
                 "acc_from VARCHAR(100),"+
                 "PRIMARY KEY(tid),"+
@@ -167,51 +163,36 @@ public class App implements Testable
             return "1";
         }
     }
-    
-    public String dropTables()
-    {
+
+    public String setDate( int year, int month, int day ){
+        String clear = "DELETE FROM Current_Date";
+        //if table is full
         try (Statement statement = _connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE Transaction_Performed");
-            statement.executeUpdate("DROP TABLE Co_owns");
-            statement.executeUpdate("DROP TABLE Pocket");
-            statement.executeUpdate("DROP TABLE Closed");
-            statement.executeUpdate("DROP TABLE Account_Owns");
-            statement.executeUpdate("DROP TABLE Customer");
-            statement.executeUpdate("DROP TABLE Current_Date");
-            return "0";
+            try (ResultSet resultSet = statement
+                    .executeQuery("SELECT cdate FROM Current_Date")) {
+                if(resultSet.next())
+                    System.out.println(resultSet.getString(1));
+                    statement.executeUpdate(clear);
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return "1 "+year+"-"+month+ "-" + day;
+        }
+        String insertDate = "INSERT INTO Current_Date (cdate) VALUES(?)";
+        LocalDate currentDate = LocalDate.of(year,month, day);
+        try (PreparedStatement statement = _connection.prepareStatement(insertDate)) {
+            statement.setDate(1,java.sql.Date.valueOf(currentDate));
+            statement.executeUpdate();
+            return "0 "+year+"-"+month+ "-" + day;
         }
         catch( SQLException e )
         {
             System.err.println( e.getMessage() );
-            return "1";
+            return "1 "+year+"-"+month+ "-" + day;
         }
-    }
-    
-    
 
-	/**
-	 * Set system's date.
-	 * @param year Valid 4-digit year, e.g. 2019.
-	 * @param month Valid month, where 1: January, ..., 12: December.
-	 * @param day Valid day, from 1 to 31, depending on the month (and if it's a leap year).
-	 * @return a string "r yyyy-mm-dd", where r = 0 for success, 1 for error; and yyyy-mm-dd is the new system's date, e.g. 2012-09-16.
-	 */
-	public String setDate( int year, int month, int day ){
-		String insertDate = "INSERT INTO Date(year, month, day)"+
-									"VALUES(?,?,?");
-		try (PreparedStatement statement = _connection.prepareStatement()) {
-			statement.executeUpdate(insertDate);
-			statement.setInt(3,day);
-			if()
-			return "0";
-		}
-		catch( SQLException e )
-		{
-			System.err.println( e.getMessage() );
-			return "1";
-		}
-	
-	}
+    }
+
 
 
 
