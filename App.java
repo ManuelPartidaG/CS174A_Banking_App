@@ -1,10 +1,9 @@
 package cs174a;                                             // THE BASE PACKAGE FOR YOUR APP MUST BE THIS ONE.  But you may add subpackages.
 
 // You may have as many imports as you need.
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.lang.*;
+import java.time.LocalDate;
 import java.util.Properties;
 import oracle.jdbc.pool.OracleDataSource;
 import oracle.jdbc.OracleConnection;
@@ -15,82 +14,109 @@ import oracle.jdbc.OracleConnection;
  */
 public class App implements Testable
 {
-	private OracleConnection _connection;                   // Example connection object to your DB.
+    private OracleConnection _connection;                   // Example connection object to your DB.
 
-	/**
-	 * Default constructor.
-	 * DO NOT REMOVE.
-	 */
-	App()
-	{
-		// TODO: Any actions you need.
-	}
+    /**
+     * Default constructor.
+     * DO NOT REMOVE.
+     */
+    App()
+    {
+        // TODO: Any actions you need.
+    }
 
-	/**
-	 * This is an example access operation to the DB.
-	 */
-	void exampleAccessToDB()
-	{
-		// Statement and ResultSet are AutoCloseable and closed automatically.
-		try( Statement statement = _connection.createStatement() )
-		{
-			try( ResultSet resultSet = statement.executeQuery( "select owner, table_name from all_tables" ) )
-			{
-				while( resultSet.next() )
-					System.out.println( resultSet.getString( 1 ) + " " + resultSet.getString( 2 ) + " " );
-			}
-		}
-		catch( SQLException e )
-		{
-			System.err.println( e.getMessage() );
-		}
-	}
+    /**
+     * This is an example access operation to the DB.
+     */
+    void exampleAccessToDB()
+    {
+        // Statement and ResultSet are AutoCloseable and closed automatically.
+        try( Statement statement = _connection.createStatement() )
+        {
+            try( ResultSet resultSet = statement.executeQuery( "select owner, table_name from all_tables" ) )
+            {
+                while( resultSet.next() )
+                    System.out.println( resultSet.getString( 1 ) + " " + resultSet.getString( 2 ) + " " );
+            }
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+        }
+    }
 
-	////////////////////////////// Implement all of the methods given in the interface /////////////////////////////////
-	// Check the Testable.java interface for the function signatures and descriptions.
+    ////////////////////////////// Implement all of the methods given in the interface /////////////////////////////////
+    // Check the Testable.java interface for the function signatures and descriptions.
 
-	@Override
-	public String initializeSystem()
-	{
-		// Some constants to connect to your DB.
-		final String DB_URL = "jdbc:oracle:thin:@cs174a.cs.ucsb.edu:1521/orcl";
-		final String DB_USER = "c##YoutNetID";
-		final String DB_PASSWORD = "YourPassword";
+    @Override
+    public String initializeSystem()
+    {
+        // Some constants to connect to your DB.
+        final String DB_URL = "jdbc:oracle:thin:@cs174a.cs.ucsb.edu:1521/orcl";
+        final String DB_USER = "c##rweinreb";
+        final String DB_PASSWORD = "5379052";
 
-		// Initialize your system.  Probably setting up the DB connection.
-		Properties info = new Properties();
-		info.put( OracleConnection.CONNECTION_PROPERTY_USER_NAME, DB_USER );
-		info.put( OracleConnection.CONNECTION_PROPERTY_PASSWORD, DB_PASSWORD );
-		info.put( OracleConnection.CONNECTION_PROPERTY_DEFAULT_ROW_PREFETCH, "20" );
+        // Initialize your system.  Probably setting up the DB connection.
+        Properties info = new Properties();
+        info.put( OracleConnection.CONNECTION_PROPERTY_USER_NAME, DB_USER );
+        info.put( OracleConnection.CONNECTION_PROPERTY_PASSWORD, DB_PASSWORD );
+        info.put( OracleConnection.CONNECTION_PROPERTY_DEFAULT_ROW_PREFETCH, "20" );
 
-		try
-		{
-			OracleDataSource ods = new OracleDataSource();
-			ods.setURL( DB_URL );
-			ods.setConnectionProperties( info );
-			_connection = (OracleConnection) ods.getConnection();
+        try
+        {
+            OracleDataSource ods = new OracleDataSource();
+            ods.setURL( DB_URL );
+            ods.setConnectionProperties( info );
+            _connection = (OracleConnection) ods.getConnection();
 
-			// Get the JDBC driver name and version.
-			DatabaseMetaData dbmd = _connection.getMetaData();
-			System.out.println( "Driver Name: " + dbmd.getDriverName() );
-			System.out.println( "Driver Version: " + dbmd.getDriverVersion() );
+            // Get the JDBC driver name and version.
+            DatabaseMetaData dbmd = _connection.getMetaData();
+            System.out.println( "Driver Name: " + dbmd.getDriverName() );
+            System.out.println( "Driver Version: " + dbmd.getDriverVersion() );
 
-			// Print some connection properties.
-			System.out.println( "Default Row Prefetch Value is: " + _connection.getDefaultRowPrefetch() );
-			System.out.println( "Database Username is: " + _connection.getUserName() );
-			System.out.println();
+            // Print some connection properties.
+            System.out.println( "Default Row Prefetch Value is: " + _connection.getDefaultRowPrefetch() );
+            System.out.println( "Database Username is: " + _connection.getUserName() );
+            System.out.println();
 
-			return "0";
-		}
-		catch( SQLException e )
-		{
-			System.err.println( e.getMessage() );
-			return "1";
-		}
-	}
+            return "0";
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+    }
 
 
-   public String createTables()
+    /**
+     * Destroy all of the tables in your DB.
+     * @return a string "r", where r = 0 for success, 1 for error.
+     */
+    public String dropTables()
+    {
+        try (Statement statement = _connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE Transaction_Performed");
+            statement.executeUpdate("DROP TABLE Co_owns");
+            statement.executeUpdate("DROP TABLE Pocket");
+            statement.executeUpdate("DROP TABLE Closed");
+            statement.executeUpdate("DROP TABLE Account_Owns");
+            statement.executeUpdate("DROP TABLE Customer");
+            statement.executeUpdate("DROP TABLE Current_Date");
+            return "0";
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+    }
+
+    /**
+     * Create all of your tables in your DB.
+     * @return a string "r", where r = 0 for success, 1 for error.
+     */
+    public String createTables()
     {
         String createCustomer = "CREATE TABLE Customer(" +
                 "name VARCHAR(100)," +
@@ -193,19 +219,7 @@ public class App implements Testable
 
     }
 
-
-
-
-	/**
-	 * Example of one of the testable functions.
-	 */
-	@Override
-	public String listClosedAccounts()
-	{
-		return "0 it works!";
-	}
-
-  public String createCheckingSavingsAccount( AccountType accountType, String id, double initialBalance, String tin, String name, String address )
+    public String createCheckingSavingsAccount( AccountType accountType, String id, double initialBalance, String tin, String name, String address )
     {
         // check if initial balance is going to be enough
         if(initialBalance<1000)
@@ -253,7 +267,7 @@ public class App implements Testable
                 statement.setDouble(5,0.0);
             }
             statement.executeUpdate();
-            this.logTransaction(tin,"Deposit",initialBalance,0,null,id, null );
+            this.logTransaction("Deposit",initialBalance,0,null,id, null );
             return "0 " + id + " " + accountType + " " + initialBalance + " " + tin;
         }
         catch( SQLException e )
@@ -296,114 +310,26 @@ public class App implements Testable
         //3. then make an entry into Co_owns(accountId, tin)
         return "0";
     }
-	 * @param id New account's ID.
-	 * @param linkedId Linked savings or checking account ID.
-	 * @param initialTopUp Initial balance to be deducted from linked account and deposited into new pocket account.
-	 * @param tin Existing customer's Tax ID number.  He/She will become the new pocket account's owner.
-	 * @return a string "r aid type balance tin", where
-	 *         r = 0 for success, 1 for error;
-	 *         aid is the new account id;
-	 *         type is the new account's type (see the enum codes above);
-	 *         balance is the account's initial balance with up to 2 decimal places (e.g. 1000.12, as with %.2f); and
-	 *         tin is the Tax ID of account's primary owner.
-	 */
-	public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
-		//1. check that linkedId account exists in Account_owns
-		//check that account is not closed
-		//2. call topUp(id, linkedinitalTopUP)
-		//3. insert into Account_Owns
-		return "0";
-	}
 
-	/**
-	 * Move a specified amount of money from the linked checking/savings account to the pocket account.
-	 * @param accountId Pocket account ID.
-	 * @param amount Non-negative amount to top up.
-	 * @return a string "r linkedNewBalance pocketNewBalance", where
-	 *         r = 0 for success, 1 for error;
-	 *         linkedNewBalance is the new balance of linked account, with up to 2 decimal places (e.g. with %.2f); and
-	 *         pocketNewBalance is the new balance of the pocket account.
-	 */
-	public String topUp( String accountId, double amount ){
-		//1. select aid from Pocket where paid=accountID 
-		//check account is not closed
-		//2. update the main account's balance to be -amount CHECK if the balance is above $0.01 
-		//3. update the pocket account's balance in the Account_owns table to be +amount 
-		//4. make an entry in Transaction_Performed
-		return "0";
-	}
 
-	/**
-	 * Deposit a given amount of dollars to an existing checking or savings account.
-	 * @param accountId Account ID.
-	 * @param amount Non-negative amount to deposit.
-	 * @return a string "r old new" where
-	 *         r = 0 for success, 1 for error;
-	 *         old is the old account balance, with up to 2 decimal places (e.g. 1000.12, as with %.2f); and
-	 *         new is the new account balance, with up to 2 decimal places.
-	 */
-	public String deposit( String accountId, double amount ){
-		//1. update the account 
-		//check that account is not in closed
-		//2. check that accountId corresponds to a savings account or a checking account 
-		//3. insert into Transaction_Performed
-		return "0";
-	}
-
-		/**
-	 * Show an account balance (regardless of type of account).
-	 * @param accountId Account ID.
-	 * @return a string "r balance", where
-	 *         r = 0 for success, 1 for error; and
-	 *         balance is the account balance, with up to 2 decimal places (e.g. with %.2f).
-	 */
-	public String showBalance( String accountId ){
-		//1. select balance from Account_Owns where aid=accountId
-		return "0";
-	}
-		/**
-	 * Move a specified amount of money from one pocket account to another pocket account.
-	 * @param from Source pocket account ID.
-	 * @param to Destination pocket account ID.
-	 * @param amount Non-negative amount to pay.
-	 * @return a string "r fromNewBalance toNewBalance", where
-	 *         r = 0 for success, 1 for error.
-	 *         fromNewBalance is the new balance of the source pocket account, with up to 2 decimal places (e.g. with %.2f); and
-	 *         toNewBalance is the new balance of destination pocket account, with up to 2 decimal places.
-	 */
-	public String payFriend( String from, String to, double amount ){
-		//CHECK if account has enough balance and that account is not closed
-		//check balance after transaction, see if it should be closed
-		//1. update Account_Owns tables for both accounts
-		//2. insert into Transaction_Performed 
-		return "0";
-	}
-	/**
-	 * Generate list of closed accounts.
-	 * @return a string "r id1 id2 ... idn", where
-	 *         r = 0 for success, 1 for error; and
-	 *         id1 id2 ... idn is a list of space-separated closed account IDs.
-	 */
-	public String listClosedAccounts(){
-		//1. select from closed 
-		return "0";
-	}
-
-	public String closeAccount(String aid){
-		//1. check if account has a pocket account by checking if it exists in Pocket
-		//2. if it does, insert pocket account into closed
-		//3. insert aid account into closed
-		return  "0"; 
-	}
-
-    public void logTransaction(String tid, String trans_type, double amount, double tfee, String checknum, String acc_to, String acc_from){
+    public void logTransaction(String trans_type, double amount, double tfee, String checknum, String acc_to, String acc_from){
         java.util.Date utilDate = new java.util.Date();
         java.sql.Date tdate=new java.sql.Date(utilDate.getTime());
+        String tid ="0";
         try (Statement statement = _connection.createStatement()) {
             try (ResultSet resultSet = statement
                     .executeQuery("SELECT cdate FROM Current_Date")) {
                 while (resultSet.next())
                     tdate = resultSet.getDate(1);
+            }
+            try (ResultSet resultSet = statement
+                    .executeQuery("SELECT tid FROM Transaction_Performed")) {
+                if (resultSet.next()) {
+                    String last_tid = resultSet.getString(1);
+                    int n=Integer.parseInt(last_tid);
+                    n++;
+                    tid=Integer.toString(n);
+                }
             }
         } catch( SQLException e){
             System.err.println( e.getMessage() );
@@ -426,4 +352,211 @@ public class App implements Testable
             System.err.println( e.getMessage() );
         }
     }
+
+    public String listClosedAccounts(){
+        String message="0";
+        try (Statement statement = _connection.createStatement()) {
+            try (ResultSet resultSet = statement
+                    .executeQuery("SELECT aid FROM Closed")) {
+                while(resultSet.next()) {
+                    String r = (resultSet.getString(1));
+                    message=message+" "+r;
+                }
+            }
+            return message;
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return "1 ";
+        }
+    }
+
+    public void closeAccount(String aid){
+        //1. check if account has a pocket account by checking if it exists in Pocket
+        //2. if it does, insert pocket account into closed
+        String checkForPocket = "SELECT P.aid FROM Pocket P WHERE P.aid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkForPocket)) {
+            statement.setString(1,aid);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if(resultSet.next()) {
+                    String paid=resultSet.getString(1);
+                    String createCustomer = "INSERT INTO Closed (aid)"+
+                            "VALUES(?)";
+                    try(PreparedStatement s = _connection.prepareStatement(createCustomer)) {
+                        s.setString(1, paid);
+                        s.executeUpdate();
+                    }
+                }
+            }
+            String createCustomer = "INSERT INTO Closed (aid)"+
+                    "VALUES(?)";
+            try(PreparedStatement s = _connection.prepareStatement(createCustomer)) {
+                s.setString(1, aid);
+                s.executeUpdate();
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+
+        //3. insert aid account into closed
+    }
+
+    //returns true if account is closed
+    //returns false if account is open
+    public boolean isClosed(String aid){
+        String checkForClosed = "SELECT C.aid FROM Closed C WHERE C.aid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkForClosed)) {
+            statement.setString(1,aid);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if(resultSet.next()) {
+                    return true;
+                }
+                return false;
+            }
+        } catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return false;
+        }
+    }
+
+/**
+ * Move a specified amount of money from one pocket account to another pocket account.
+ * @param from Source pocket account ID.
+ * @param to Destination pocket account ID.
+ * @param amount Non-negative amount to pay.
+ * @return a string "r fromNewBalance toNewBalance", where
+ *         r = 0 for success, 1 for error.
+ *         fromNewBalance is the new balance of the source pocket account, with up to 2 decimal places (e.g. with %.2f); and
+ *         toNewBalance is the new balance of destination pocket account, with up to 2 decimal places.
+ */
+
+//TO DO: make a method that will test if a pocket account has appeared in a transaction this month
+    public String payFriend( String from, String to, double amount ){
+        double to_balance=0;
+        double from_balance=0;
+        //get to balance
+        String checkBalance = "SELECT A.balance FROM Account_Owns A WHERE A.aid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
+            statement.setString(1, to);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                while (resultSet.next())
+                    to_balance = resultSet.getDouble(1);
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+
+        //get from balance
+        try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
+            statement.setString(1, from);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                while (resultSet.next())
+                    from_balance = resultSet.getDouble(1);
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+
+        String response ="1 "+ (Math.round(from_balance * 100.0)/100.0) + " "+ (Math.round(to_balance * 100.0)/100.0);
+
+        //check if either account is closed
+        if(this.isClosed(to) || this.isClosed(from))
+            return response;
+        //1. check if there have been transaction
+        //2. if amount is negative, return 1
+
+        if(amount<0)
+            return response;
+
+        //3. if amount is equal to the amount less than or equal to source balance
+        if(amount<=from_balance){
+            //update from balance
+            double new_from_balance = Math.round((from_balance - amount)*100.0)/100.0;
+            String updateBalance = "UPDATE Account_Owns A SET A.balance = ? WHERE A.aid = ?";
+            try(PreparedStatement s = _connection.prepareStatement(updateBalance)) {
+                s.setDouble(1, new_from_balance);
+                s.setString(2, from);
+                s.executeUpdate();
+            }
+            catch( SQLException e){
+                System.err.println( e.getMessage() );
+                return response;
+            }
+            //update to balance
+            double new_to_balance = Math.round((to_balance + amount)*100.0)/100.0;
+            try(PreparedStatement s = _connection.prepareStatement(updateBalance)) {
+                s.setDouble(1, new_to_balance);
+                s.setString(2, to);
+                s.executeUpdate();
+            }
+            catch( SQLException e){
+                System.err.println( e.getMessage() );
+                return "1 "+ (Math.round(new_from_balance * 100.0)/100.0) + " "+ (Math.round(to_balance * 100.0)/100.0);
+            }
+            //4. if new source balance is less than equal to 0.01, close account
+            if(new_from_balance<=0.01)
+                closeAccount(from);
+            return "0 "+ new_from_balance + " "+ new_to_balance;
+        }
+        //else amount would set balance negative
+        return response;
+
+    }
+
+    public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
+        //1. check that linkedId account exists in Account_owns
+        //check that account is not closed
+        //2. call topUp(id, linkedinitalTopUP)
+        //3. insert into Account_Owns
+        return "0";
+    }
+
+
+    public String topUp( String accountId, double amount ){
+        //1. select aid from Pocket where paid=accountID
+        //check account is not closed
+        //2. update the main account's balance to be -amount CHECK if the balance is above $0.01
+        //3. update the pocket account's balance in the Account_owns table to be +amount
+        //4. make an entry in Transaction_Performed
+        return "0";
+    }
+
+
+    public String deposit( String accountId, double amount ){
+        //1. update the account
+        //check that account is not in closed
+        //2. check that accountId corresponds to a savings account or a checking account
+        //3. insert into Transaction_Performed
+        return "0";
+    }
+
+
+    public String showBalance( String accountId ){
+        //1. select balance from Account_Owns where aid=accountId
+        return "0";
+    }
+
+    //TO DO: figure this out and also put it in the payfreind function
+    //checks if pocket account has had a transaction this month
+    /*public boolean checkPocketTransaction(String aid){
+        //1. query transactions_owns table check if there is a row where the date's month is equal to the current date
+        String checkBalance = "SELECT * FROM Account_Owns A WHERE A.aid = ? AND (SELECT EXTRACT(MONTH FROM A.tdate) = "+
+                "(SELECT EXTRACT(MONTH FROM C.cdate) FROM Current_Date C))";
+        try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
+            statement.setString(1, aid);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if (resultSet.next())
+                    return true;
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return false;
+        }
+        return false;
+    }*/
 }
+
