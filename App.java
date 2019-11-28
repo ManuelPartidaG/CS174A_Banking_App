@@ -324,7 +324,7 @@ public class App implements Testable
             }
             try (ResultSet resultSet = statement
                     .executeQuery("SELECT tid FROM Transaction_Performed")) {
-                if (resultSet.next()) {
+                while (resultSet.next()) {
                     String last_tid = resultSet.getString(1);
                     int n=Integer.parseInt(last_tid);
                     n++;
