@@ -539,6 +539,8 @@ public class App implements Testable
         return "0";
     }
     
+        
+    //NEW methods//
     
     //HELPER function 
     //if op=minus subtract from balance
@@ -563,6 +565,8 @@ public class App implements Testable
             balance+=amount;
         return balance;
     }
+    
+
     
     //USES checkBalance
     public String topUp( String accountId, double amount ){
@@ -590,11 +594,13 @@ public class App implements Testable
                             s.executeUpdate();
                         }
                         double newPocketBalance=this.checkBalance(accountId,amount, "plus");
+                        //3. update the pocket account's balance in the Account_owns table to be +amount
                         try(PreparedStatement s = _connection.prepareStatement(updateBalance)) {
                             s.setDouble(1, newPocketBalance);
                             s.setString(2, accountId);
                             s.executeUpdate();
                         }
+                         //4. make an entry in Transaction_Performed
                         this.logTransaction("Top Up",amount,0,null,accountId,aid);
                     }
                     if(newMainBalance <=0.01)
@@ -606,8 +612,8 @@ public class App implements Testable
             return "1";
         }
 
-        //3. update the pocket account's balance in the Account_owns table to be +amount
-        //4. make an entry in Transaction_Performed
+        
+
         return "1";
     }
 
