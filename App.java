@@ -538,6 +538,78 @@ public class App implements Testable
         //1. select balance from Account_Owns where aid=accountId
         return "0";
     }
+    
+    
+    //HELPER function 
+    //if op=minus subtract from balance
+    //if op=plus add to balance 
+    public double checkBalance(String aid, double amount, String op){
+        double balance=0;
+        String checkBalance = "SELECT A.balance FROM Account_Owns A WHERE A.aid = ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
+            statement.setString(1, aid);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                while (resultSet.next())
+                    balance = resultSet.getDouble(1);
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+        balance=Math.round(balance * 100.0)/100.0);
+        if(op.equals("minus"))
+            balance-=amount;
+        else
+            balance+=amount;
+        return balance;
+    }
+    
+    //USES checkBalance
+    public String topUp( String accountId, double amount ){
+        if(this.isClosed(accountId))
+            return "1";
+        //1. select aid from Pocket where paid=accountID
+        String aid="";
+        String getaid="SELECT P.aid FROM Pocket P WHERE P.paid=?";
+        try (PreparedStatement statement = _connection.prepareStatement(getaid)) {
+            statement.setString(1, accountId);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if (resultSet.next()) {
+                    aid = resultSet.getString(1);
+                    if(this.isClosed(aid))
+                        //check account is not closed
+                        return "1";
+                    //2. update the main account's balance to be -amount CHECK if the balance is above $0.01
+                    double newMainBalance=this.checkBalance(aid,amount,"minus");
+                    if(newMainBalance > 0){
+                        String updateBalance="UPDATE Account_Owns A SET A.balance = ? WHERE A.aid = ?";
+                        try(PreparedStatement s = _connection.prepareStatement(updateBalance)) {
+                            s.setDouble(1, newMainBalance);
+                            s.setString(2, aid);
+                            s.executeUpdate();
+                        }
+                        double newPocketBalance=this.checkBalance(accountId,amount, "plus");
+                        try(PreparedStatement s = _connection.prepareStatement(updateBalance)) {
+                            s.setDouble(1, newPocketBalance);
+                            s.setString(2, accountId);
+                            s.executeUpdate();
+                        }
+                        this.logTransaction("Top Up",amount,0,null,accountId,aid);
+                    }
+                    if(newMainBalance <=0.01)
+                        this.closeAccount(aid);
+                }
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+
+        //3. update the pocket account's balance in the Account_owns table to be +amount
+        //4. make an entry in Transaction_Performed
+        return "1";
+    }
 
     //TO DO: figure this out and also put it in the payfreind function
     //checks if pocket account has had a transaction this month
