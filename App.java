@@ -515,15 +515,6 @@ public class App implements Testable
     }
 
 
-    public String topUp( String accountId, double amount ){
-        //1. select aid from Pocket where paid=accountID
-        //check account is not closed
-        //2. update the main account's balance to be -amount CHECK if the balance is above $0.01
-        //3. update the pocket account's balance in the Account_owns table to be +amount
-        //4. make an entry in Transaction_Performed
-        return "0";
-    }
-
 
     public String deposit( String accountId, double amount ){
         //1. update the account
@@ -616,6 +607,36 @@ public class App implements Testable
 
         return "1";
     }
+    
+       /*public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
+        //check that account is not closed
+        String errorMessage="1 "+ id+" "+AccountType.POCKET+" "+ initialTopUp+" "+tin;
+        if(this.isClosed(linkedId))
+            return errorMessage;
+        //1. check that linkedId account exists in Account_owns and that that account is not another pocket account
+        String checkAccount = "SELECT * FROM Account_Owns A WHERE A.aid = ? AND A.acc_type <> ?";
+        try (PreparedStatement statement = _connection.prepareStatement(checkAccount)) {
+            statement.setString(1, linkedId);
+            statement.setString(2, AccountType.POCKET);
+            try (ResultSet resultSet = statement
+                    .executeQuery()) {
+                if(resultSet.next()) {
+                    //2. String s=topUp(id, initialTopUP)
+                    //if (s.equals(//topUp success message){
+                        //insert into Account_Owns Table a row of type pocket
+                        //insert into Pocket Table
+                        //
+                    //}
+                }
+                else{
+                    return errorMessage;
+                }
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+            return errorMessage;
+        }
+    }*/
 
     //TO DO: figure this out and also put it in the payfreind function
     //checks if pocket account has had a transaction this month
