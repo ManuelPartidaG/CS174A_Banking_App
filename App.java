@@ -752,7 +752,7 @@ public class App implements Testable
 
     //TO DO: figure this out and also put it in the payfreind function
     //checks if pocket account has had a transaction this month
-    public boolean checkPocketTransaction(String aid){
+  /*  public boolean checkPocketTransaction(String aid){
         //1. query transactions_owns table check if there is a row where the date's month is equal to the current date
         String checkBalance = "SELECT * FROM Account_Owns A WHERE A.aid = ? AND (SELECT EXTRACT(MONTH FROM A.tdate) = "+
                 "(SELECT EXTRACT(MONTH FROM C.cdate) FROM Current_Date C))";
@@ -776,5 +776,5 @@ public class App implements Testable
             return false;
         }
         return false;
-    }
+    }*/
 }
