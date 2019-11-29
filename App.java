@@ -53,8 +53,8 @@ public class App implements Testable
     {
         // Some constants to connect to your DB.
         final String DB_URL = "jdbc:oracle:thin:@cs174a.cs.ucsb.edu:1521/orcl";
-        final String DB_USER = "c##rweinreb";
-        final String DB_PASSWORD = "5379052";
+        final String DB_USER = "c##manuelpartidagomez";
+        final String DB_PASSWORD = "9599663";
 
         // Initialize your system.  Probably setting up the DB connection.
         Properties info = new Properties();
@@ -506,59 +506,201 @@ public class App implements Testable
 
     }
 
-    public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
+    public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin, String branch )throws SQLException{
+
+      String check = " SELECT A.AID"+
+        " FROM Account_Owns A" +
+        " WHERE A.AID = ?";
+
+        try(PreparedStatement checkstatement= _connection.prepareStatement(check)){
+          checkstatement.setString(1, linkedId);
+          try (ResultSet resultSet = checkstatement.executeQuery()){
+              if(resultSet.next()){
+
+                  String insertAcc= "INSERT INTO Account_Owns (AID, BRANCH, ACC_TYPE, BALANCE, INTEREST_RATE, INTEREST, TAXID) VALUES (?,?,'POCKET',0,0,0,?)";
+                  try(PreparedStatement s = _connection.prepareStatement(insertAcc)) {
+
+                      System.out.println("NO ERROR YET");
+                      s.setString(1, id);
+                      s.setString(2, branch);
+                      s.setString(3, tin);
+                      s.executeUpdate();
+                      System.out.println("NO ERROR YET");
+
+                      String insertPocket = "INSERT INTO Pocket (PAID ,AID, POCKET_FEE) VALUES (?,?,0.00) ";
+                      try (PreparedStatement s1 = _connection.prepareStatement(insertPocket)){
+                        s1.setString(1, id);
+                        s1.setString(2, linkedId);
+                        s1.executeUpdate();
+                        this.topUp(id, initialTopUp);
+                      }catch (SQLException e){
+                        System.out.println("Error 1");
+                        return  "1";
+
+                      }
+                  }catch (SQLException e){
+                      System.out.println(e.getMessage());
+                    return  "1";
+
+                  }
+
+
+              }
+              else return "1";
+          }catch (SQLException e){
+              System.out.println(e.getMessage());
+            return  "1";
+
+          }
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+          return  "1";
+
+        }
         //1. check that linkedId account exists in Account_owns
         //check that account is not closed
-        //2. call topUp(id, linkedinitalTopUP)
-        //3. insert into Account_Owns
+        //2. insert into Account_Owns
+        //3. Insert into Pocket
+        //4. Call topUp
         return "0";
     }
 
 
 
-    public String deposit( String accountId, double amount ){
-        //1. update the account
-        //check that account is not in closed
-        //2. check that accountId corresponds to a savings account or a checking account
-        //3. insert into Transaction_Performed
-        return "0";
-    }
+
+    //1. update the account
+    //check that account is not in closed
+    //2. check that accountId corresponds to a savings account or a checking account
+    //3. insert into Transaction_Performed
+    public String deposit( String accountId, double amount ) throws SQLException{
+ 		 String r;
+ 		 String res;
+
+ 		 float oldbalance=0;
+ 		 float  newbalance=0;
+
+ 		 String sql0= " SELECT A.BALANCE " +
+ 		 " FROM Account_Owns A WHERE A.AID = "+accountId;
+
+ 		 try( Statement select= _connection.createStatement()){
+      ResultSet answer0 = select.executeQuery(sql0);
+ 		if(answer0.next()){
+ 			oldbalance= answer0.getFloat("BALANCE");
+ 		}
+
+ 		 String sql = "UPDATE Account_Owns A" +
+ 			 	 " SET A.BALANCE = A.BALANCE +" + amount +
+ 			 	 " WHERE A.AID = "+ accountId +
+ 			 	" AND (A.ACC_TYPE= 'STUDENT_CHECKING' " +
+ 				 "OR A.ACC_TYPE= 'INTEREST_CHECKING'"+
+ 				 " OR A.ACC_TYPE= 'SAVINGS')"+
+ 	 					 " AND  NOT EXISTS (SELECT DISTINCT Cl.AID"+
+ 	 					 " FROM Closed Cl"+
+ 	 					 " WHERE Cl.AID = A.AID)";
+
+ 		 try (Statement statement = _connection.createStatement()) {
+
+ 		 statement.executeUpdate(sql);
 
 
-    public String showBalance( String accountId ){
-        //1. select balance from Account_Owns where aid=accountId
-        return "0";
-    }
-    
-        
+ 			 String sql1 = " SELECT A.BALANCE " +
+ 			 " FROM Account_Owns A WHERE A.AID = "+accountId;
+ 		 try (Statement selectstmnt = _connection.createStatement()){
+
+ 			ResultSet	answer = selectstmnt.executeQuery(sql1);
+ 				if (answer.next())
+ 				newbalance= answer.getFloat("BALANCE");
+         r="0";
+         res =  r  +" "+ oldbalance +" " +newbalance;
+         this.logTransaction("Deposit",amount,0,null,accountId, null );
+    		 return res;
+
+
+
+
+
+     } catch (SQLException e){
+       r="1";
+       res =  r  +" "+ oldbalance +" " +newbalance;
+
+     }
+
+ 		 }catch (SQLException e){
+        r="1";
+        res =  r  +" "+ oldbalance +" " +newbalance;
+
+      }
+
+ 		 } catch (SQLException e){
+        r="1";
+        res =  r  +" "+ oldbalance +" " +newbalance;
+
+      }
+
+      return res;
+ 		 }//1. update the account
+    //check that account is not in closed
+    //2. check that accountId corresponds to a savings account or a checking account
+    //3. insert into Transaction_Performed
+
+
+    public String showBalance( String accountId )throws SQLException {
+
+
+       String res;
+       String r;
+       float balance=0;
+       float accid= Float.parseFloat(accountId);
+       String sql0= " SELECT A.BALANCE " +
+       " FROM Account_Owns A WHERE A.AID = "+accid;
+       try( Statement select= _connection.createStatement()){
+
+         ResultSet answer0 = select.executeQuery(sql0);
+         if(answer0.next())
+          balance= answer0.getFloat("BALANCE");
+          r="0";
+
+
+       }catch (SQLException e){
+           r="1";
+       }
+
+       res= r +" "+  balance;
+
+       return res;
+
+     // 	//1. select balance from Account_Owns where aid=accountId
+     // 	return "0";
+   }
+
+
     //NEW methods//
-    
-    //HELPER function 
+
+    //HELPER function
     //if op=minus subtract from balance
-    //if op=plus add to balance 
+    //if op=plus add to balance
     public double checkBalance(String aid, double amount, String op){
         double balance=0;
         String checkBalance = "SELECT A.balance FROM Account_Owns A WHERE A.aid = ?";
         try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
             statement.setString(1, aid);
-            try (ResultSet resultSet = statement
-                    .executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     balance = resultSet.getDouble(1);
             }
         }catch( SQLException e){
             System.err.println( e.getMessage() );
         }
-        balance=Math.round(balance * 100.0)/100.0);
+        balance=Math.round(balance * 100.0)/100.0;
         if(op.equals("minus"))
             balance-=amount;
         else
             balance+=amount;
         return balance;
     }
-    
 
-    
+
+
     //USES checkBalance
     public String topUp( String accountId, double amount ){
         if(this.isClosed(accountId))
@@ -603,59 +745,36 @@ public class App implements Testable
             return "1";
         }
 
-        
+
 
         return "1";
     }
-    
-       /*public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
-        //check that account is not closed
-        String errorMessage="1 "+ id+" "+AccountType.POCKET+" "+ initialTopUp+" "+tin;
-        if(this.isClosed(linkedId))
-            return errorMessage;
-        //1. check that linkedId account exists in Account_owns and that that account is not another pocket account
-        String checkAccount = "SELECT * FROM Account_Owns A WHERE A.aid = ? AND A.acc_type <> ?";
-        try (PreparedStatement statement = _connection.prepareStatement(checkAccount)) {
-            statement.setString(1, linkedId);
-            statement.setString(2, AccountType.POCKET);
-            try (ResultSet resultSet = statement
-                    .executeQuery()) {
-                if(resultSet.next()) {
-                    //2. String s=topUp(id, initialTopUP)
-                    //if (s.equals(//topUp success message){
-                        //insert into Account_Owns Table a row of type pocket
-                        //insert into Pocket Table
-                        //
-                    //}
-                }
-                else{
-                    return errorMessage;
-                }
-            }
-        }catch( SQLException e){
-            System.err.println( e.getMessage() );
-            return errorMessage;
-        }
-    }*/
 
     //TO DO: figure this out and also put it in the payfreind function
     //checks if pocket account has had a transaction this month
-    /*public boolean checkPocketTransaction(String aid){
+    public boolean checkPocketTransaction(String aid){
         //1. query transactions_owns table check if there is a row where the date's month is equal to the current date
         String checkBalance = "SELECT * FROM Account_Owns A WHERE A.aid = ? AND (SELECT EXTRACT(MONTH FROM A.tdate) = "+
                 "(SELECT EXTRACT(MONTH FROM C.cdate) FROM Current_Date C))";
         try (PreparedStatement statement = _connection.prepareStatement(checkBalance)) {
+
             statement.setString(1, aid);
-            try (ResultSet resultSet = statement
-                    .executeQuery()) {
-                if (resultSet.next())
+            System.out.println("hahahahhhahaaaha");
+            try (ResultSet resultSet = statement.executeQuery()) {
+              System.out.println("hahahahhhahaaaha");
+
+                while (resultSet.next()){
+
+                  String tmp= resultSet.getString(1);
+                  System.out.println(tmp);
                     return true;
+                  }
             }
         }catch( SQLException e){
+
             System.err.println( e.getMessage() );
             return false;
         }
         return false;
-    }*/
+    }
 }
-
