@@ -750,7 +750,206 @@ public class App implements Testable
         return "1";
     }
 
-    //TO DO: figure this out and also put it in the payfreind function
+    String wire(String acc_to, String acc_from, double amount, String tin){
+
+      double newtobalance = 0;
+      double newmainbalance=0;
+      String r = " ";
+      String from= " ";
+      String check = "SELECT A.AID FROM Account_Owns A, Customer C" +
+                     " WHERE A.TAXID= C.TAXID" +
+                     " AND (A.ACC_TYPE= 'STUDENT_CHECKING' OR A.ACC_TYPE= 'INTEREST_CHECKING' OR A.ACC_TYPE= 'SAVINGS')" +
+                     " AND C.TAXID= ? AND A.AID = ? ";
+        try(PreparedStatement checkstatement= _connection.prepareStatement(check)){
+          checkstatement.setString(1, tin);
+          checkstatement.setString(2, acc_from);
+            try (ResultSet resultSet = checkstatement.executeQuery()){
+              if (resultSet.next()){
+                newmainbalance=this.checkBalance(acc_from,amount+ (amount*0.02), "minus");
+                if(newmainbalance> 0.01){
+
+                  String update= "UPDATE Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
+
+                  try (PreparedStatement updatemain= _connection.prepareStatement(update)){
+
+                    updatemain.setDouble(1, newmainbalance);
+                    updatemain.setString(2, acc_from);
+
+
+
+                      updatemain.executeUpdate();
+                      updatemain.close();
+
+                    newtobalance = this.checkBalance(acc_to, amount,"plus");
+
+                    String updateto= "UPDATE Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
+                    try(PreparedStatement updatetoacc = _connection.prepareStatement(updateto)){
+                      updatetoacc.setDouble(1, newtobalance);
+                      updatetoacc.setString(2, acc_to);
+                      updatetoacc.executeUpdate();
+                      updatetoacc.close();
+                    //  this.logTransaction("Wire",  amount, amount*0.02, null,  acc_to,  acc_from);
+                      r= "0";
+
+
+
+
+                    }catch( SQLException e){
+                        System.out.println("error 4");
+                        System.err.println( e.getMessage() );
+                        return "1";
+                    }
+                  }catch( SQLException e){
+                      System.out.println("error 3");
+                      System.err.println( e.getMessage() );
+                      return "1";
+                  }
+                } else{
+                  r=  "1";
+                }
+              }
+
+
+            }catch( SQLException e){
+              System.out.println("error 2");
+                System.err.println( e.getMessage() );
+                return "1";
+            }
+
+
+
+        }catch( SQLException e){
+          System.out.println("error 1");
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+//1. check that tin corresponds to the TAXID for acc_from
+//2. subtract amount from acc_from(check that it doesnt go below .01)
+//3. add amout to acc_to
+//4. call logTransaction
+  return r +" "+ newmainbalance+" "+newtobalance;
+
+//       Subtract money from one savings or checking account and add it to another.The customer that
+// requests this action must be an owner of the account from which the money is subtracted. There is a 2%
+// fee for this action.
+    }
+
+    String collect(String pid,String mainid, double amount){
+      double newpocketbalance=0;
+      double newmainbalance=0;
+      String r= " ";
+      String selectpaid = "SELECT A.AID FROM Account_Owns A, Pocket P WHERE A.ACC_TYPE='POCKET' AND A.AID=P.PAID AND A.AID= ? ";
+      try(PreparedStatement selectst= _connection.prepareStatement(selectpaid)){
+          selectst.setString(1, pid);
+            try (ResultSet resultSet = selectst.executeQuery()){
+              if(resultSet.next()){
+                  newpocketbalance=this.checkBalance(pid,amount+ (amount*0.03), "minus");
+                  if(newpocketbalance> 0.01){
+                    String update= "UPDATE Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
+                    try (PreparedStatement updatepocket= _connection.prepareStatement(update)){
+                      updatepocket.setDouble(1, newpocketbalance);
+                      updatepocket.setString(2, pid);
+                      updatepocket.executeUpdate();
+                      updatepocket.close();
+                      newmainbalance= this.checkBalance(mainid, amount,"plus");
+                        String updatemain= "Update Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
+                        try(PreparedStatement updatemainacc = _connection.prepareStatement(updatemain)){
+                          updatemainacc.setDouble(1, newmainbalance);
+                          updatemainacc.setString(2, mainid);
+                          updatemainacc.executeUpdate();
+                          updatemainacc.close();
+                          //this.logTransaction("Collect",  amount, amount*0.03, null, pid, mainid);
+                          r= "0";
+
+                        }catch( SQLException e){
+                            System.out.println("error 4");
+                            System.err.println( e.getMessage() );
+                            return "1";
+                        }
+                    }catch( SQLException e){
+                        System.out.println("error 3");
+                        System.err.println( e.getMessage() );
+                        return "1";
+                    }
+                  }else{
+                    r= "1";
+                  }
+              }else {
+                r="1";
+              }
+            }catch( SQLException e){
+                System.out.println("error 2");
+                System.err.println( e.getMessage() );
+                return "1";
+            }
+
+      }catch( SQLException e){
+          System.out.println("error 1");
+          System.err.println( e.getMessage() );
+          return "1";
+      }
+
+
+
+
+
+  return r +" " + newpocketbalance+" "+ newmainbalance;
+
+
+
+//      Move a specified amount of money from the pocket account back to the linked checking/savings
+// account, there will be a 3% fee assessed.
+    }
+
+
+   String writeCheck(String aid,String checknumber, double amount){
+     double newmainbalance=0;
+     String r= "1";
+     String checkaid= "SELECT A.AID FROM Account_Owns A "+
+                      "WHERE A.AID = ? AND (A.ACC_TYPE= 'STUDENT_CHECKING' OR A.ACC_TYPE= 'INTEREST_CHECKING')";
+     try(PreparedStatement selectst= _connection.prepareStatement(checkaid)){
+       selectst.setString(1, aid);
+         try (ResultSet resultSet = selectst.executeQuery()){
+           if(resultSet.next()){
+             newmainbalance=this.checkBalance(aid,amount, "minus");
+             String update= "Update Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
+             try (PreparedStatement updateacc= _connection.prepareStatement(update)){
+               updateacc.setDouble(1, newmainbalance);
+               updateacc.setString(2, aid);
+               updateacc.executeUpdate();
+               updateacc.close();
+               this.logTransaction("Write-Check",  amount, 0, checknumber, aid, null);
+               r= "0";
+             }catch( SQLException e){
+                 System.out.println("error 3");
+                 System.err.println( e.getMessage() );
+                 return "1";
+             }
+
+           } else {
+             r="1";
+           }
+         }catch( SQLException e){
+             System.out.println("error 2");
+             System.err.println( e.getMessage() );
+             return "1";
+         }
+     }catch( SQLException e){
+         System.out.println("error 1");
+         System.err.println( e.getMessage() );
+         return "1";
+     }
+
+
+
+     return r + " "+newmainbalance;
+
+
+     //Subtract money from the checking account. Associated with a check transaction is a check
+     // number. (Note that a check cannot be written from all account types.
+   }
+
+
     //checks if pocket account has had a transaction this month
   /*  public boolean checkPocketTransaction(String aid){
         //1. query transactions_owns table check if there is a row where the date's month is equal to the current date
