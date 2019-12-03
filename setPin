@@ -1,0 +1,33 @@
+    public String SetPin(int oldPin , int newPin){
+        String r="1";
+        String getpin= "SELECT C.taxid FROM Customer C WHERE C.PIN= " + oldPin;
+        try (Statement checkpin= _connection.createStatement()){
+            try (ResultSet resultSet = checkpin.executeQuery(getpin)){
+                while(resultSet.next()) {
+                    String s = (resultSet.getString(1));
+                    String updatepin = "UPDATE CUSTOMER SET PIN = ? WHERE  taxid = ?  ";
+                    try (PreparedStatement update = _connection.prepareStatement(updatepin)) {
+                        update.setInt(1, newPin);
+                        update.setString(2, s);
+                        update.executeUpdate();
+                        r = "0";
+
+                    } catch (SQLException e) {
+                        System.out.println("error 3");
+                        System.err.println(e.getMessage());
+                        return "1";
+                    }
+                }
+            }catch( SQLException e){
+                System.out.println("error 2");
+                System.err.println( e.getMessage() );
+                return "1";
+            }
+
+        }catch( SQLException e){
+            System.out.println("error 1");
+            System.err.println( e.getMessage() );
+            return "1";
+        }
+
+        return r;
