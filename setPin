@@ -1,21 +1,26 @@
-    public String SetPin(int oldPin , int newPin){
+    public String SetPin(String taxid, int oldPin , int newPin){
         String r="1";
-        String getpin= "SELECT C.taxid FROM Customer C WHERE C.PIN= " + oldPin;
+        String getpin= "SELECT C.PIN FROM Customer C WHERE C.taxid= " + taxid;
         try (Statement checkpin= _connection.createStatement()){
             try (ResultSet resultSet = checkpin.executeQuery(getpin)){
                 while(resultSet.next()) {
-                    String s = (resultSet.getString(1));
-                    String updatepin = "UPDATE CUSTOMER SET PIN = ? WHERE  taxid = ?  ";
-                    try (PreparedStatement update = _connection.prepareStatement(updatepin)) {
-                        update.setInt(1, newPin);
-                        update.setString(2, s);
-                        update.executeUpdate();
-                        r = "0";
+                    int pin = (resultSet.getInt(1));
+                    if(pin==oldPin) {
+                        String updatepin = "UPDATE CUSTOMER SET PIN = ? WHERE  taxid = ?  ";
+                        try (PreparedStatement update = _connection.prepareStatement(updatepin)) {
+                            update.setInt(1, newPin);
+                            update.setString(2, taxid);
+                            update.executeUpdate();
+                            r = "0";
 
-                    } catch (SQLException e) {
-                        System.out.println("error 3");
-                        System.err.println(e.getMessage());
-                        return "1";
+                        } catch (SQLException e) {
+                            System.out.println("error 3");
+                            System.err.println(e.getMessage());
+                            return "1";
+                        }
+                    }
+                    else{
+                        System.out.println("Wrong pin, cannot change");
                     }
                 }
             }catch( SQLException e){
@@ -31,3 +36,10 @@
         }
 
         return r;
+
+//   Add money to the checking or savings account. The amount added is the monthly interest
+// rate times the average daily balance for the month (e.g., an account with balance $30 for 10 days and $60
+// for 20 days in a 30-day month has an average daily balance of $50, not $45!). Interest is added at the end
+// of each month.
+    }
+
