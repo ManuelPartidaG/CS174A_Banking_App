@@ -1,0 +1,136 @@
+public int menu2()
+{
+
+  int menuChoice;
+  do
+  {
+      System.out.print("\nPlease Choose From the Following Options:"
+              + "\n 1. Enter Check Transaction \n 2. Generate Monthly Statement"
+              + "\n 3. List Closed Accounts\n 4. Generate Government Drug and Tax Evasion Report (DTER)\n 5.Customer Report\n 6.Add Interest"
+              + "\n 7.Create Account\n 8.Delete Closed Accounts and Customers\n 9.Delete Transactions:\n 10. Log Out\n\n");
+
+      menuChoice = scan.nextInt();
+
+      if (menuChoice < 1 || menuChoice > 10){
+          System.out.println("error");
+      }
+
+  }while (menuChoice < 1 || menuChoice > 10);
+
+  return menuChoice;
+}
+
+
+public void startTeller() {
+    String r="1";
+    String name="";
+
+    int menuOption=0;
+
+
+
+    while (menuOption != 10)
+    {
+        menuOption=this.menu2();
+        switch (menuOption)
+        {
+        case 1:
+            System.out.print("\nEnter Account ID: ");
+            String id = scan.next();
+            System.out.print("\nEnter Checknumber: ");
+            String checknumber = scan.next();
+            System.out.print("\nEnter Amount: ");
+            double amount = scan.nextDouble();
+
+            r =this.enterCheckTransaction(id, checknumber, amount);
+            System.out.println(r);
+            break;
+        case 2:
+            System.out.print("\nEnter Tax ID ");
+            String taxid1= scan.next();
+
+            this.generateMonthlyStatement(taxid1);
+            break;
+        case 3:
+            r =  this.listClosedAccounts();
+            System.out.println(r);
+            break;
+        case 4:
+
+            this.generateDTER();
+
+            break;
+        case 5:
+            System.out.print("\nEnter Tax ID: ");
+            String taxid2= scan.next();
+
+            this.createCustomerReport(taxid2);
+
+            break;
+        case 6:
+
+          System.out.println("1");
+          break;
+        case 7:
+            System.out.print("\n1.Interest \n2.Student \n3.Saving \n4.Pocket \n");
+            int type= scan.nextInt();
+            System.out.print("\nEnter Account ID: ");
+            String accid = scan.next();
+            System.out.print("\nEnter Tax ID: ");
+            String taxid3 = scan.next();
+            System.out.print("\nEnter Name: ");
+            name= scan.next();
+
+            System.out.print("\nEnter Address: ");
+            String address = scan.next();
+            System.out.print("\nEnter Initial Balance: ");
+            double initialamount = scan.nextDouble();
+            switch (type){
+              case 1:
+                  this.createCheckingSavingsAccount( AccountType.INTEREST_CHECKING, accid, initialamount, taxid3,  name, address );
+                break;
+              case 2:
+                  this.createCheckingSavingsAccount( AccountType.STUDENT_CHECKING, accid, initialamount, taxid3,  name, address );
+                  break;
+              case 3:
+                  this.createCheckingSavingsAccount( AccountType.SAVINGS, accid, initialamount, taxid3,  name, address );
+                  break;
+              case 4:
+                  this.createCheckingSavingsAccount( AccountType.POCKET, accid, initialamount, taxid3,  name, address );
+                  break;
+            }
+            break;
+        case 8:
+          this.deleteClosedAccounts();
+          System.out.println(r);
+          break;
+        case 9:
+        this.deleteTransactions();
+        System.out.println(r);
+        break;
+
+
+        case 10:
+            System.out.print("\nHave a Nice Day.  Good-Bye!");
+            System.exit(0);
+            break;
+    }
+  }
+}
+  public void atmOrteller(){
+    int choice = 0;
+    while (choice !=1 && choice!=2){
+
+    System.out.print("\n 1.Customer \n 2.Teller\n");
+     choice = scan.nextInt();
+    if(choice==1){
+      this.startAtm();
+    }
+    else if (choice==2) {
+      this.startTeller();
+    }
+      else
+      System.out.println("try again");
+
+  }
+  }
