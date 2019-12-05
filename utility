@@ -1,0 +1,28 @@
+ public void accountUtility(AccountType accountType, String id, double initialBalance, String tin, String branch){
+        String createAccount = "INSERT INTO Account_Owns(aid, branch, acc_type, balance, interest_rate, interest, taxid)"+
+                "VALUES(?, ?, ?, ?, ?, 0, ? )";
+        try(PreparedStatement statement = _connection.prepareStatement(createAccount)){
+
+            statement.setString(1,id);
+            statement.setString(2,branch);
+            statement.setString(3,accountType.name());
+            statement.setDouble(4, initialBalance);
+            statement.setString(6, tin);
+            if(accountType.equals("INTEREST_CHECKING")){
+                statement.setDouble(5,3.0);
+            }
+            else if (accountType.equals("SAVINGS")){
+                statement.setDouble(5, 4.8);
+            }
+            else{
+                statement.setDouble(5,0.0);
+            }
+            statement.executeUpdate();
+            this.logTransaction("Deposit",initialBalance,0,null,id, null );
+            this.insertInitialBalance(id,initialBalance);
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+        }
+    }
