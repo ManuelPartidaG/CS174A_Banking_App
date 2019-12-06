@@ -1,24 +1,53 @@
-public void populateTables(){
+public void accountUtility(AccountType accountType, String id, double initialBalance, String tin, String branch){
+        String createAccount = "INSERT INTO Account_Owns(aid, branch, acc_type, balance, interest_rate, interest, taxid)"+
+                "VALUES(?, ?, ?, ?, ?, 0, ? )";
+        try(PreparedStatement statement = _connection.prepareStatement(createAccount)){
+
+            statement.setString(1,id);
+            statement.setString(2,branch);
+            statement.setString(3,accountType.name());
+            statement.setDouble(4, initialBalance);
+            statement.setString(6, tin);
+            if(accountType.equals("INTEREST_CHECKING")){
+                statement.setDouble(5,3.0);
+            }
+            else if (accountType.equals("SAVINGS")){
+                statement.setDouble(5, 4.8);
+            }
+            else{
+                statement.setDouble(5,0.0);
+            }
+            statement.executeUpdate();
+            this.logTransaction("Deposit",initialBalance,0,null,id, null );
+            this.insertInitialBalance(id,initialBalance);
+        }
+        catch( SQLException e )
+        {
+            System.err.println( e.getMessage() );
+        }
+    }
+
+    public void populateTables(){
         try (Statement statement = _connection.createStatement()) {
             //INSRTING CUSTOMERS
 
 
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Alfred Hitchcock', '361721022', '6667 El Colegio #40', 1234)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Billy Clinton', '231403227', '5777 Hollister', 1468)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Cindy Laugher', '412231856', '7000 Hollister', 3764)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('David Copperfill', '207843218', '1357 State St', 8582)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Elizabeth Sailor', '122219876', '4321 State St', 3856)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Fatal Castro', '401605312', '3756 La Cumbre Plaza', 8193)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('George Brush', '201674933', '5346 Foothill Av', 9824)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Hurryson Ford', '212431965', '678 State St', 8471)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Ivan Lendme', '322175130', '1235 Johnson Dr', 1234)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Joe Pepsi', '344151573', '3210 State St', 3692)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Kelvin Costner', '209378521', 'Santa Cruz #3579', 4659)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Li Kung', '212116070', '2 People''s Rd Beijing', 9173)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Magic Jordon', '188212217', '3852 Court Rd', 7351)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Nam-Hoi Chung', '203491209', '1997 People''s St HK', 5340)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Olive Stoner', '210389768', '6689 El Colegio #151', 8452)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Pit Wilson', '400651982', '911 State St', 1821)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Alfred Hitchcock', '361721022', '6667 El Colegio #40', 30850)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Billy Clinton', '231403227', '5777 Hollister', 36700)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Cindy Laugher', '412231856', '7000 Hollister', 94100)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('David Copperfill', '207843218', '1357 State St', 214550)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Elizabeth Sailor', '122219876', '4321 State St', 96400)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Fatal Castro', '401605312', '3756 La Cumbre Plaza', 204825)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('George Brush', '201674933', '5346 Foothill Av', 245600)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Hurryson Ford', '212431965', '678 State St', 2353)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Ivan Lendme', '322175130', '1235 Johnson Dr', 88300)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Joe Pepsi', '344151573', '3210 State St', 92300)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Kelvin Costner', '209378521', 'Santa Cruz #3579', 116475)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Li Kung', '212116070', '2 People''s Rd Beijing', 229325)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Magic Jordon', '188212217', '3852 Court Rd', 183775)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Nam-Hoi Chung', '203491209', '1997 People''s St HK', 133500)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Olive Stoner', '210389768', '6689 El Colegio #151', 211300)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Pit Wilson', '400651982', '911 State St', 45525)");
             //SETTING DATE
 
 
@@ -29,7 +58,7 @@ public void populateTables(){
 
 
             this.accountUtility(AccountType.STUDENT_CHECKING, "17431", 1200, "344151573", "San Francisco");
-            this.accountUtility(AccountType.STUDENT_CHECKING, "54321", 12000, "212431965", "Los Angeles");
+            this.accountUtility(AccountType.STUDENT_CHECKING, "54321", 21000, "212431965", "Los Angeles");
             this.accountUtility(AccountType.STUDENT_CHECKING, "12121", 1200, "207843218", "Goleta");
             this.accountUtility(AccountType.INTEREST_CHECKING, "41725", 15000, "201674933", "Los Angeles");
             this.accountUtility(AccountType.INTEREST_CHECKING, "93156", 2000000, "209378521", "Goleta");
@@ -66,7 +95,7 @@ public void populateTables(){
             statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('19023','401605312' )");
             statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','207843218' )");
             statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','122219876' )");
-            statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','361721022' )");
+            statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','344151573' )");
             statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','203491209' )");
             statement.executeUpdate("INSERT INTO Co_owns (aid,taxid) VALUES('32156','210389768' )");
 
