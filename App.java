@@ -4,15 +4,13 @@ package cs174a;                                             // THE BASE PACKAGE 
 import java.math.RoundingMode;
 import java.sql.*;
 import java.lang.*;
+import java.util.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Properties;
-import java.util.Calendar;
 import oracle.jdbc.pool.OracleDataSource;
 import oracle.jdbc.OracleConnection;
-
 import javax.swing.plaf.nimbus.State;
-import java.util.Scanner;
+
 
 /**
  * The most important class for your application.
@@ -21,7 +19,10 @@ import java.util.Scanner;
 public class App implements Testable
 {
     public static Scanner scan=new Scanner(System.in);
-    private OracleConnection _connection;                   // Example connection object to your DB.
+    private OracleConnection _connection;
+    public ArrayList<String> flaggedcustomers =new ArrayList<String>();
+
+    // Example connection object to your DB.
 
     /**
      * Default constructor.
@@ -600,7 +601,7 @@ public class App implements Testable
         // 	return "0";
     }
 
-    public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin, String branch ){
+    public String createPocketAccountHelper( String id, String linkedId, double initialTopUp, String tin, String branch ){
 
         String check = " SELECT A.AID"+
                 " FROM Account_Owns A" +
@@ -658,6 +659,66 @@ public class App implements Testable
         //4. Call topUp
         return "0";
     }
+
+    public String createPocketAccount( String id, String linkedId, double initialTopUp, String tin ){
+
+        String check = " SELECT A.AID"+
+                " FROM Account_Owns A" +
+                " WHERE A.AID = ?";
+
+        try(PreparedStatement checkstatement= _connection.prepareStatement(check)){
+            checkstatement.setString(1, linkedId);
+            try (ResultSet resultSet = checkstatement.executeQuery()){
+                if(resultSet.next()){
+                    String insertAcc= "INSERT INTO Account_Owns (AID, BRANCH, ACC_TYPE, BALANCE, INTEREST_RATE, INTEREST, TAXID) VALUES (?,?,'POCKET',0,0,0,?)";
+                    try(PreparedStatement s = _connection.prepareStatement(insertAcc)) {
+
+
+                        s.setString(1, id);
+                        s.setString(2, "Isla Vista");
+                        s.setString(3, tin);
+                        s.executeUpdate();
+
+
+                        String insertPocket = "INSERT INTO Pocket (PAID ,AID, POCKET_FEE) VALUES (?,?,0.00) ";
+                        try (PreparedStatement s1 = _connection.prepareStatement(insertPocket)){
+                            s1.setString(1, id);
+                            s1.setString(2, linkedId);
+                            s1.executeUpdate();
+                            this.topUp(id, initialTopUp);
+                            this.insertInitialBalance(id,initialTopUp);
+                        }catch (SQLException e){
+                            System.out.println("Error 1");
+                            return  "1";
+
+                        }
+                    }catch (SQLException e){
+                        System.out.println(e.getMessage());
+                        return  "1";
+
+                    }
+
+
+                }
+                else return "1";
+            }catch (SQLException e){
+                System.out.println(e.getMessage());
+                return  "1";
+
+            }
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+            return  "1";
+
+        }
+        //1. check that linkedId account exists in Account_owns
+        //check that account is not closed
+        //2. insert into Account_Owns
+        //3. Insert into Pocket
+        //4. Call topUp
+        return "0";
+    }
+
 
 
 
@@ -904,7 +965,7 @@ public class App implements Testable
         //change balance
         this.updateBalance(aid,balance);
         //4.log transaction
-        this.logTransaction("Withdrawl", amount, 0,null, aid, null);
+        this.logTransaction("Withdrawal", amount, 0,null, aid, null);
         //5.check if account should close
         if(balance<=0.01) {
             this.closeAccount(aid);
@@ -1155,7 +1216,7 @@ public class App implements Testable
                     this.listTransactions(s);
                     System.out.println();
                     f+=this.getInitialFinalBalance(s);
-                    System.out.println("-----------------------");
+                    System.out.println("------------------------------------");
                     System.out.println();
                 }
             } catch (SQLException e) {
@@ -1180,7 +1241,7 @@ public class App implements Testable
                         this.listTransactions(s);
                         System.out.println();
                         f+=this.getInitialFinalBalance(s);
-                        System.out.println("-----------------------");
+                        System.out.println("------------------------------------");
                         System.out.println();
                     }
                 } catch (SQLException e) {
@@ -1190,7 +1251,7 @@ public class App implements Testable
                 System.err.println(e.getMessage());
             }
         }
-        System.out.println("Total balance: "+String.format( "%.2f", f));
+
         if(f>100000)
             System.out.println("Warning: Limit of insurance reached");
 
@@ -1384,7 +1445,61 @@ public class App implements Testable
         return amount;
     }
 
-    public void checkCustomerAmount(String taxid){
+    public void generateDTER(){
+        //for each account, see if incoming funds >10000
+        //if true, then print all owners
+
+        String getAccounts="SELECT A.aid FROM Account_Owns A";
+        try(Statement statement = _connection.createStatement()) {
+            try (ResultSet resultSet = statement
+                    .executeQuery(getAccounts)) {
+                while(resultSet.next()) {
+                    String aid = (resultSet.getString(1));
+                    if(this.getIncomingFunds(aid)>10000){
+                        //System.out.println(aid);
+                        this.addCustomersToList(aid);
+                    }
+                }
+            }
+        }catch( SQLException e){
+             System.err.println( e.getMessage() );
+        }
+        for(int i=0; i< flaggedcustomers.size(); i++){
+            System.out.println(flaggedcustomers.get(i));
+        }
+    }
+
+    public void addCustomersToList(String aid){
+        //System.out.println("original aid "+aid);
+        boolean alreadyhere=false;
+        String getCustomers="SELECT C.taxid FROM Customer C";
+        try(Statement statement = _connection.createStatement()) {
+            try (ResultSet resultSet = statement
+                    .executeQuery(getCustomers)) {
+                while(resultSet.next()) {
+                    String taxid=resultSet.getString(1);
+                    if(this.isOwner(aid,taxid)){
+                        ///this.getPrimaryOwner(aid);
+                        //this.getCoOwner(aid);
+                        //System.out.println("aid "+aid);
+                        for(int i=0; i<flaggedcustomers.size(); i++){
+                            if(flaggedcustomers.get(i).equals(taxid))
+                                alreadyhere=true;
+                        }
+                        if(!alreadyhere)
+                            flaggedcustomers.add(taxid);
+                    }
+                }
+            }
+        }catch( SQLException e){
+            System.err.println( e.getMessage() );
+        }
+    }
+
+
+
+
+   /* public void checkCustomerAmount(String taxid){
         String aid;
         double total=0;
         String sql = "SELECT A.aid FROM Account_Owns A WHERE A.taxid = ?";
@@ -1419,7 +1534,7 @@ public class App implements Testable
         }catch( SQLException e){
             System.err.println( e.getMessage() );
         }
-    }
+    }*/
 
     public void accrueInterest(){
       String getavg="SELECT aid, SUM(num_days * avg_balance)/SUM(num_days) FROM Avg_Balance GROUP BY aid";
@@ -2084,11 +2199,11 @@ public class App implements Testable
             statement.setString(3,accountType.name());
             statement.setDouble(4, initialBalance);
             statement.setString(6, tin);
-            if(accountType.equals("INTEREST_CHECKING")){
-                statement.setDouble(5,3.0);
+            if(accountType.name().equals("INTEREST_CHECKING")){
+                statement.setDouble(5,0.0025);
             }
-            else if (accountType.equals("SAVINGS")){
-                statement.setDouble(5, 4.8);
+            else if (accountType.name().equals("SAVINGS")){
+                statement.setDouble(5, 0.004);
             }
             else{
                 statement.setDouble(5,0.0);
@@ -2177,7 +2292,7 @@ public class App implements Testable
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('George Brush', '201674933', '5346 Foothill Av', 9824)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Hurryson Ford', '212431965', '678 State St', 8471)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Ivan Lendme', '322175130', '1235 Johnson Dr', 1234)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Joe Pepsi', '34415173', '3210 State St', 3692)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Joe Pepsi', '344151573', '3210 State St', 3692)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Kelvin Costner', '209378521', 'Santa Cruz #3579', 4659)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Li Kung', '212116070', '2 People''s Rd Beijing', 9173)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Magic Jordon', '188212217', '3852 Court Rd', 7351)");
@@ -2193,20 +2308,20 @@ public class App implements Testable
             // CREATING ACCOUNTS+INITIAL DEPOSITS/TOPUPS
 
 
-            this.accountUtility(AccountType.STUDENT_CHECKING, "17431", 1200, "361721022", "San Francisco");
+            this.accountUtility(AccountType.STUDENT_CHECKING, "17431", 1200, "344151573", "San Francisco");
             this.accountUtility(AccountType.STUDENT_CHECKING, "54321", 12000, "212431965", "Los Angeles");
             this.accountUtility(AccountType.STUDENT_CHECKING, "12121", 1200, "207843218", "Goleta");
             this.accountUtility(AccountType.INTEREST_CHECKING, "41725", 15000, "201674933", "Los Angeles");
             this.accountUtility(AccountType.INTEREST_CHECKING, "93156", 2000000, "209378521", "Goleta");
             this.accountUtility(AccountType.SAVINGS, "43942", 1289, "361721022", "Santa Barbara");
-            this.accountUtility(AccountType.SAVINGS, "29107", 34000, "207843218", "Los Angeles");
+            this.accountUtility(AccountType.SAVINGS, "29107", 34000, "209378521", "Los Angeles");
             this.accountUtility(AccountType.SAVINGS, "19023", 2300, "412231856", "San Francisco");
             this.accountUtility(AccountType.SAVINGS, "32156", 1000, "188212217", "Goleta");
             this.accountUtility(AccountType.INTEREST_CHECKING, "76543", 8456, "212116070", "Santa Barbara");
-            this.createPocketAccount( "53027", "12121", 50, "207843218", "Goleta" );
-            this.createPocketAccount( "60413","43942", 20, "400651982", "Santa Cruz");
-            this.createPocketAccount( "43947", "29107", 30, "212116070", "Isla Vista" );
-            this.createPocketAccount( "67521","19023", 100, "401605312", "Santa Barbara" );
+            this.createPocketAccountHelper( "53027", "12121", 50, "207843218", "Goleta" );
+            this.createPocketAccountHelper( "60413","43942", 20, "400651982", "Santa Cruz");
+            this.createPocketAccountHelper( "43947", "29107", 30, "212116070", "Isla Vista" );
+            this.createPocketAccountHelper( "67521","19023", 100, "401605312", "Santa Barbara" );
 
             //ADDING CO_OWNERS
 
@@ -2271,6 +2386,143 @@ public class App implements Testable
         }
     }
 
+    public int menu2()
+    {
+
+        int menuChoice;
+        do
+        {
+            System.out.print("\nPlease Choose From the Following Options:"
+                    + "\n 1. Enter Check Transaction \n 2. Generate Monthly Statement"
+                    + "\n 3. List Closed Accounts\n 4. Generate Government Drug and Tax Evasion Report (DTER)\n 5.Customer Report\n 6.Add Interest"
+                    + "\n 7.Create Account\n 8.Delete Closed Accounts and Customers\n 9.Delete Transactions:\n 10. Log Out\n\n");
+
+            menuChoice = scan.nextInt();
+
+            if (menuChoice < 1 || menuChoice > 10){
+                System.out.println("error");
+            }
+
+        }while (menuChoice < 1 || menuChoice > 10);
+
+        return menuChoice;
+    }
+
+
+    public void startTeller() {
+        String r="1";
+        String name="";
+
+        int menuOption=0;
+
+
+
+        while (menuOption != 10)
+        {
+            menuOption=this.menu2();
+            switch (menuOption)
+            {
+                case 1:
+                    System.out.print("\nEnter Account ID: ");
+                    String id = scan.next();
+                    System.out.print("\nEnter Checknumber: ");
+                    String checknumber = scan.next();
+                    System.out.print("\nEnter Amount: ");
+                    double amount = scan.nextDouble();
+
+                    r =this.enterCheckTransaction(id, checknumber, amount);
+                    System.out.println(r);
+                    break;
+                case 2:
+                    System.out.print("\nEnter Tax ID ");
+                    String taxid1= scan.next();
+
+                    this.generateMonthlyStatement(taxid1);
+                    break;
+                case 3:
+                    r =  this.listClosedAccounts();
+                    System.out.println(r);
+                    break;
+                case 4:
+
+                    this.generateDTER();
+
+                    break;
+                case 5:
+                    System.out.print("\nEnter Tax ID: ");
+                    String taxid2= scan.next();
+
+                    this.createCustomerReport(taxid2);
+
+                    break;
+                case 6:
+
+                    System.out.println("1");
+                    break;
+                case 7:
+                    System.out.print("\n1.Interest \n2.Student \n3.Saving \n4.Pocket \n");
+                    int type= scan.nextInt();
+                    System.out.print("\nEnter Account ID: ");
+                    String accid = scan.next();
+                    System.out.print("\nEnter Tax ID: ");
+                    String taxid3 = scan.next();
+                    System.out.print("\nEnter Name: ");
+                    name= scan.next();
+
+                    System.out.print("\nEnter Address: ");
+                    String address = scan.next();
+                    System.out.print("\nEnter Initial Balance: ");
+                    double initialamount = scan.nextDouble();
+                    switch (type){
+                        case 1:
+                            this.createCheckingSavingsAccount( AccountType.INTEREST_CHECKING, accid, initialamount, taxid3,  name, address );
+                            break;
+                        case 2:
+                            this.createCheckingSavingsAccount( AccountType.STUDENT_CHECKING, accid, initialamount, taxid3,  name, address );
+                            break;
+                        case 3:
+                            this.createCheckingSavingsAccount( AccountType.SAVINGS, accid, initialamount, taxid3,  name, address );
+                            break;
+                        case 4:
+                            this.createCheckingSavingsAccount( AccountType.POCKET, accid, initialamount, taxid3,  name, address );
+                            break;
+                    }
+                    break;
+                case 8:
+                    this.deleteClosedAccounts();
+                    System.out.println(r);
+                    break;
+                case 9:
+                    this.deleteTransactions();
+                    System.out.println(r);
+                    break;
+ 
+                case 10:
+                    System.out.print("\nHave a Nice Day.  Good-Bye!");
+                    System.exit(0);
+                    break;
+            }
+        }
+    }
+    public void atmOrteller(){
+        int choice = 0;
+        while (choice !=1 && choice!=2){
+
+            System.out.print("\n 1.Customer \n 2.Teller\n");
+            choice = scan.nextInt();
+            if(choice==1){
+                this.startAtm();
+            }
+            else if (choice==2) {
+                this.startTeller();
+            }
+            else
+                System.out.println("try again");
+
+        }
+    }
+
 }
+
 
 
