@@ -1,0 +1,86 @@
+public String SetPin(String taxid, int oldPin , int newPin){
+      String r="1";
+      int newhashpin=0;
+      String getpin= "SELECT C.PIN FROM Customer C WHERE C.taxid= " + taxid;
+      try (Statement checkpin= _connection.createStatement()){
+          try (ResultSet resultSet = checkpin.executeQuery(getpin)){
+              while(resultSet.next()) {
+                  int pin = (resultSet.getInt(1));
+                  if(pin==oldPin) {
+
+                      newhashpin = Encrypt(newPin);
+                      String updatepin = "UPDATE CUSTOMER SET PIN = ? WHERE  taxid = ?  ";
+                      try (PreparedStatement update = _connection.prepareStatement(updatepin)) {
+                          update.setInt(1, newhashpin);
+                          update.setString(2, taxid);
+                          update.executeUpdate();
+                          r = "0";
+
+                      } catch (SQLException e) {
+                          System.out.println("error 3");
+                          System.err.println(e.getMessage());
+                          return "1";
+                      }
+                  }
+                  else{
+                      System.out.println("Wrong pin, cannot change");
+                  }
+              }
+          }catch( SQLException e){
+              System.out.println("error 2");
+              System.err.println( e.getMessage() );
+              return "1";
+          }
+
+      }catch( SQLException e){
+          System.out.println("error 1");
+          System.err.println( e.getMessage() );
+          return "1";
+      }
+
+      return r;
+
+
+  }
+
+public boolean VerifyPin(int pin, String taxid){
+
+ int unhashedpin;
+ String getpin= "SELECT C.PIN FROM Customer C WHERE C.taxid= " + taxid;
+ try(Statement checkpin= _connection.createStatement()){
+     try (ResultSet resultSet = checkpin.executeQuery(getpin)){
+           while(resultSet.next()) {
+               int resultpin = (resultSet.getInt(1));
+               if(pin==Decrypt(resultpin)){
+
+                 System.out.println("0");
+                 return true;
+
+               }else{
+                 System.out.println("cannot verify");
+                 return false;
+
+               }
+
+           }
+     }catch( SQLException e){
+         System.out.println("error 1");
+         System.err.println( e.getMessage() );
+         return false;
+     }
+
+
+ }catch( SQLException e){
+     System.out.println("error 1");
+     System.err.println( e.getMessage() );
+     return false ;
+ }
+return false;
+}
+
+public int Encrypt(int number) {
+      return number*25;
+  }
+public int Decrypt(int number){
+  return number/25;
+}
