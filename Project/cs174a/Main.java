@@ -38,7 +38,7 @@ public class Main
 		  System.out.println( r );
 
 			 	 	System.out.println( r );
-			 	   r= app.setDate( 2011, 8, 15 );
+			 	   
 				  System.out.println( r );
 				r= app.createCustomer( "17431", "9599663", "Manuel Partida", "6749 Trigo" );
 				System.out.println( r );
