@@ -1520,11 +1520,9 @@ public class App implements Testable
         } catch( SQLException e){
             System.err.println( e.getMessage() );
         }
-
         if(total>10000)
             System.out.println("taxid: " +taxid);
     }
-
     public void generateDTER(){
         System.out.println("List of customers with more than $10,000 incoming to accounts");
         String sql= "SELECT C.taxid FROM Customer C";
@@ -1638,7 +1636,6 @@ public class App implements Testable
         }
         catch( SQLException e){
             System.err.println( e.getMessage() );
-
         }*/
        String query="";
        String sql="SELECT * FROM Avg_Balance WHERE aid="+aid+" AND avg_balance="+balance;
@@ -2222,9 +2219,9 @@ public class App implements Testable
         do
         {
             System.out.print("\nPlease Choose From the Following Options:"
-                    + "\n 1.Display Balance \n 2.Deposit"
-                    + "\n 3.Withdraw\n 4.Top Up\n 5.Purchase\n 6.Transfer"
-                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10.Set Pin \n11.Log Out\n\n");
+                    + "\n1.Display Balance \n2.Deposit"
+                    + "\n3.Withdraw\n 4.Top Up\n5.Purchase\n6.Transfer"
+                    + "\n7.Collect\n8.Wire\n9.Pay-Friend\n10.Set in \n11.Log Out\n\n");
 
             menuChoice = scan.nextInt();
 
@@ -2379,9 +2376,9 @@ public class App implements Testable
         do
         {
             System.out.print("\nPlease Choose From the Following Options:"
-                    + "\n 1.Enter Check Transaction \n 2.Generate Monthly Statement"
-                    + "\n 3.List Closed Accounts\n 4.Generate Government Drug and Tax Evasion Report (DTER)\n 5.Customer Report\n 6.Add Interest"
-                    + "\n 7.Create Account\n 8.Delete Closed Accounts and Customers\n 9.Delete Transactions\n 10.Set Date\n 11.Set Interest\n 12.Accrue Interest\n 13.Set Interest Rate\n 14.Log Out\n\n");
+                    + "\n1.Enter Check Transaction \n2.Generate Monthly Statement"
+                    + "\n3.List Closed Accounts\n4.Generate Government Drug and Tax Evasion Report (DTER)\n5.Customer Report\n6.Add Interest"
+                    + "\n7.Create Account\n8.Delete Closed Accounts and Customers\n9.Delete Transactions\n10.Set Date\n11.Set Interest\n 12.Accrue Interest\n 13.Set Interest Rate\n 14.Log Out\n\n");
 
             menuChoice = scan.nextInt();
 
@@ -2557,4 +2554,3 @@ public class App implements Testable
     }
 
 }
-
