@@ -1,0 +1,11 @@
+Manuel Partida Gomez 9599663
+Regina Weinreb 5379052
+We were able to able to complete all basic requirements from the project specification.
+We implemented all the functions in testable.java and they are all working.
+The functions that are in testable can be called by themselves in main and will work.
+To access the bank teller and user interfaces , the function "atmOrteller()" must be called in Main.java.
+
+The instructions to run are as specified on Piazza:
+
+To compile in command line, type in the following command: javac -d out/ -cp /usr/lib/oracle/19.3/client64/lib/ojdbc8.jar cs174a/*.java
+To run from command line, type in the following command: java -cp /usr/lib/oracle/19.3/client64/lib/ojdbc8.jar:out:. cs174a.Main
