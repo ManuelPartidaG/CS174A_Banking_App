@@ -4,6 +4,7 @@ We were able to able to complete all basic requirements from the project specifi
 We implemented all the functions in testable.java and they are all working.
 The functions that are in testable can be called by themselves in main and will work.
 To access the bank teller and user interfaces , the function "atmOrteller()" must be called in Main.java.
+To fill the database with all the sample data, call the function "populateTables()".
 
 The instructions to run are as specified on Piazza:
 
