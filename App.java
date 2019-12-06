@@ -222,7 +222,7 @@ public class App implements Testable
             try (ResultSet resultSet = statement
                     .executeQuery("SELECT cdate FROM Current_Date")) {
                 if(resultSet.next())
-                    System.out.println(resultSet.getString(1));
+                    //System.out.println(resultSet.getString(1));
                     statement.executeUpdate(clear);
             }
         } catch( SQLException e){
@@ -356,7 +356,6 @@ public class App implements Testable
 
     public String payFriend( String from, String to, double amount ){
         if(!(this.getAccountType(from).equals("POCKET")) || !(this.getAccountType(to).equals("POCKET"))) {
-            System.out.println("here");
             return "1";
         }
         double fee=0;
@@ -629,7 +628,6 @@ public class App implements Testable
                             this.topUp(id, initialTopUp);
                             this.insertInitialBalance(id,initialTopUp);
                         }catch (SQLException e){
-                            System.out.println("Error 1");
                             return  "1";
 
                         }
@@ -688,7 +686,6 @@ public class App implements Testable
                             this.topUp(id, initialTopUp);
                             this.insertInitialBalance(id,initialTopUp);
                         }catch (SQLException e){
-                            System.out.println("Error 1");
                             return  "1";
 
                         }
@@ -1052,7 +1049,7 @@ public class App implements Testable
                     .executeQuery()) {
                 while (resultSet.next()) {
                     String aid = resultSet.getString(1);
-                    System.out.print(aid);
+                    System.out.println(aid);
                     if(this.isClosed(aid)){
                         System.out.println(" (closed)");
                     }
@@ -1369,7 +1366,6 @@ public class App implements Testable
         catch( SQLException e )
         {
             System.err.println( e.getMessage() );
-            System.out.println("tried "+aid);
         }
     }
 
@@ -1698,12 +1694,10 @@ public class App implements Testable
                     r= "0";
 
                 }catch( SQLException e){
-                    System.out.println("error 4");
                     System.err.println( e.getMessage() );
                     return "1";
                 }
             }catch( SQLException e){
-                System.out.println("error 3");
                 System.err.println( e.getMessage() );
                 return "1";
             }
@@ -1750,12 +1744,10 @@ public class App implements Testable
                                 r= "0";
 
                             }catch( SQLException e){
-                                System.out.println("error 4");
                                 System.err.println( e.getMessage() );
                                 return "1";
                             }
                         }catch( SQLException e){
-                            System.out.println("error 3");
                             System.err.println( e.getMessage() );
                             return "1";
                         }
@@ -1766,13 +1758,11 @@ public class App implements Testable
                     r="1";
                 }
             }catch( SQLException e){
-                System.out.println("error 2");
                 System.err.println( e.getMessage() );
                 return "1";
             }
 
         }catch( SQLException e){
-            System.out.println("error 1");
             System.err.println( e.getMessage() );
             return "1";
         }
@@ -1809,7 +1799,6 @@ public class App implements Testable
                         this.logTransaction("Write-Check",  amount, 0, checknumber, aid, null);
                         r= "0";
                     }catch( SQLException e){
-                        System.out.println("error 3");
                         System.err.println( e.getMessage() );
                         return "1";
                     }
@@ -1818,12 +1807,10 @@ public class App implements Testable
                     r="1";
                 }
             }catch( SQLException e){
-                System.out.println("error 2");
                 System.err.println( e.getMessage() );
                 return "1";
             }
         }catch( SQLException e){
-            System.out.println("error 1");
             System.err.println( e.getMessage() );
             return "1";
         }
@@ -1864,13 +1851,11 @@ public class App implements Testable
                     r = "0";
                     this.logTransaction("Transfer",amount,0,null,acc_to,acc_from);
                 }catch( SQLException e){
-                    System.out.println("error 4");
                     System.err.println( e.getMessage() );
                     return "1";
                 }
 
             }catch( SQLException e){
-                System.out.println("error 3");
                 System.err.println( e.getMessage() );
                 return "1";
             }
@@ -1898,7 +1883,7 @@ public class App implements Testable
                         this.logTransaction("Write-Check",  amount, 0, checknumber, aid, null);
                         r= "0";
                     }catch( SQLException e){
-                        System.out.println("error 3");
+
                         System.err.println( e.getMessage() );
                         return "1";
                     }
@@ -1907,12 +1892,11 @@ public class App implements Testable
                     r="1";
                 }
             }catch( SQLException e){
-                System.out.println("error 2");
+
                 System.err.println( e.getMessage() );
                 return "1";
             }
         }catch( SQLException e){
-            System.out.println("error 1");
             System.err.println( e.getMessage() );
             return "1";
         }
@@ -1945,7 +1929,7 @@ public class App implements Testable
                             r = "0";
 
                         } catch (SQLException e) {
-                            System.out.println("error 3");
+
                             System.err.println(e.getMessage());
                             return "1";
                         }
@@ -1955,13 +1939,11 @@ public class App implements Testable
                     }
                 }
             }catch( SQLException e){
-                System.out.println("error 2");
                 System.err.println( e.getMessage() );
                 return "1";
             }
 
         }catch( SQLException e){
-            System.out.println("error 1");
             System.err.println( e.getMessage() );
             return "1";
         }
@@ -1991,14 +1973,12 @@ public class App implements Testable
 
                 }
             }catch( SQLException e){
-                System.out.println("error 1");
                 System.err.println( e.getMessage() );
                 return false;
             }
 
 
         }catch( SQLException e){
-            System.out.println("error 1");
             System.err.println( e.getMessage() );
             return false ;
         }
@@ -2044,10 +2024,11 @@ public class App implements Testable
         int menuChoice;
         do
         {
-            System.out.print("\nPlease Choose From the Following Options:"
-                    + "\n 1. Display Balance \n 2. Deposit"
-                    + "\n 3. Withdraw\n 4. Top Up\n 5.Purchase\n 6.Transfer"
-                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10. Log Out\n\n");
+            System.out.print(
+                     "\n 1. Display Balance \n 2. Deposit"
+                    + "\n 3. Withdraw\n 4. Top Up\n 5. Purchase\n 6. Transfer"
+                    + "\n 7. Collect\n 8. Wire\n 9. Pay-Friend\n 10. Log Out\n"
+                    +"\nPlease Choose An Option: ");
 
             menuChoice = scan.nextInt();
 
@@ -2392,10 +2373,11 @@ public class App implements Testable
         int menuChoice;
         do
         {
-            System.out.print("\nPlease Choose From the Following Options:"
-                    + "\n 1. Enter Check Transaction \n 2. Generate Monthly Statement"
-                    + "\n 3. List Closed Accounts\n 4. Generate Government Drug and Tax Evasion Report (DTER)\n 5.Customer Report\n 6.Add Interest"
-                    + "\n 7.Create Account\n 8.Delete Closed Accounts and Customers\n 9.Delete Transactions:\n 10. Log Out\n\n");
+            System.out.print(
+                    "\n 1. Enter Check Transaction \n 2. Generate Monthly Statement"
+                    + "\n 3. List Closed Accounts\n 4. Generate Government Drug and Tax Evasion Report (DTER)\n 5. Customer Report\n 6. Add Interest"
+                    + "\n 7. Create Account\n 8. Delete Closed Accounts and Customers\n 9. Delete Transactions:\n10. Set Date \n11. Set Interest Rate \n12. Log Out\n"
+                    +"\nPlease Choose From the Following Options: ");
 
             menuChoice = scan.nextInt();
 
@@ -2496,8 +2478,32 @@ public class App implements Testable
                     this.deleteTransactions();
                     System.out.println(r);
                     break;
- 
                 case 10:
+                    System.out.print("\nEnter year: ");
+                    int year= scan.nextInt();
+                    System.out.print("\nEnter month: ");
+                    int month= scan.nextInt();
+                    System.out.print("\nEnter day: ");
+                    int day= scan.nextInt();
+                    this.setDate(year,month,day);
+                    break;
+                case 11:
+                    System.out.println("\nEnter Account Type: ");
+                    String acc_type=scan.next();
+                    System.out.println("\nEnter New Monthly Interest Rate: ");
+                    double rate=scan.nextDouble();
+                    if(acc_type.equals("Interest_Checking"))
+                        this.setInterestRate(AccountType.INTEREST_CHECKING,rate);
+                    else if(acc_type.equals("Savings"))
+                        this.setInterestRate(AccountType.SAVINGS,rate);
+                    else if(acc_type.equals("Student_Checking"))
+                        this.setInterestRate(AccountType.STUDENT_CHECKING,rate);
+                    else if(acc_type.equals("Pocket"))
+                        this.setInterestRate(AccountType.POCKET,rate);
+                    else
+                        System.out.println("Sorry, invalid account type");
+                    break;
+                case 12:
                     System.out.print("\nHave a Nice Day.  Good-Bye!");
                     System.exit(0);
                     break;
@@ -2523,6 +2529,8 @@ public class App implements Testable
     }
 
 }
+
+
 
 
 
