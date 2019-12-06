@@ -2025,15 +2025,15 @@ public int Decrypt(int number){
             System.out.print("\nPlease Choose From the Following Options:"
                     + "\n 1. Display Balance \n 2. Deposit"
                     + "\n 3. Withdraw\n 4. Top Up\n 5.Purchase\n 6.Transfer"
-                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10. Log Out\n\n");
+                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10.Set Pin 11.Log Out\n\n");
 
             menuChoice = scan.nextInt();
 
-            if (menuChoice < 1 || menuChoice > 10){
+            if (menuChoice < 1 || menuChoice > 11){
                 System.out.println("error");
             }
 
-        }while (menuChoice < 1 || menuChoice > 10);
+        }while (menuChoice < 1 || menuChoice > 11);
 
         return menuChoice;
     }
@@ -2074,7 +2074,7 @@ public int Decrypt(int number){
             //give the option of deposit, withdraw, or logout.
 
 
-            while (menuOption != 10) {
+            while (menuOption != 11) {
                 menuOption = this.menu();
                 switch (menuOption) {
                     case 1:
@@ -2108,18 +2108,18 @@ public int Decrypt(int number){
 
                         break;
                     case 5:
-                        System.out.print("\nEnter Account ID");
+                        System.out.print("\nEnter Account ID: ");
                         String accId = scan.next();
-                        System.out.print("\nEnter Amount to Purchase Item(s)");
+                        System.out.print("\nEnter Amount to Purchase Item(s): ");
                         double purchaseAmt= scan.nextDouble();
                         this.purchase(accId,purchaseAmt);
                         break;
                     case 6:
-                        System.out.print("\nEnter Account ID to Transfer From");
+                        System.out.print("\nEnter Account ID to Transfer From: ");
                         String transferfromaccId = scan.next();
-                        System.out.print("\nEnter Account ID to Transfer To");
+                        System.out.print("\nEnter Account ID to Transfer To: ");
                         String transfertoaccId = scan.next();
-                        System.out.print("\nEnter Amount");
+                        System.out.print("\nEnter Amount: ");
                         double transferAmt = scan.nextDouble();
                         this.transfer(transferfromaccId, transfertoaccId, tin, transferAmt);
                         System.out.println("Transfer Completed");
@@ -2135,28 +2135,34 @@ public int Decrypt(int number){
                         System.out.println("Collect completed");
                         break;
                     case 8:
-                        System.out.print("\nEnter Account ID to Wire From");
+                        System.out.print("\nEnter Account ID to Wire From: ");
                         String wirefromaccId = scan.next();
-                        System.out.print("\nEnter Account ID to Wire To");
+                        System.out.print("\nEnter Account ID to Wire To: ");
                         String wiretoaccId = scan.next();
-                        System.out.print("\nEnter Amount");
+                        System.out.print("\nEnter Amount: ");
                         double wireAmt = scan.nextDouble();
                         r = this.wire(wiretoaccId, wirefromaccId, wireAmt, tin);
                         System.out.println(r);
                         break;
                     case 9:
-                        System.out.print("\nEnter Account ID to Pay Friend From");
+                        System.out.print("\nEnter Account ID to Pay Friend From: ");
                         String pffromaccId = scan.next();
-                        System.out.print("\nEnter Friend's Account ID");
+                        System.out.print("\nEnter Friend's Account ID: ");
                         String pftoaccId = scan.next();
-                        System.out.print("\nEnter Amount to Pay");
+                        System.out.print("\nEnter Amount to Pay: ");
                         double pfAmt = scan.nextDouble();
                         r = this.payFriend(pffromaccId, pftoaccId, pfAmt);
                         System.out.println("Pay-friend Completed");
                         break;
-
-
                     case 10:
+                        System.out.print("\nEnter Account New PIN: ");
+                        int newpin=scan.nextInt();
+                        int oldpin=this.Encrypt(pin);
+                        r=this.SetPin(tin,oldpin,newpin);
+                        System.out.println(r);
+
+
+                    case 11:
                         System.out.print("\nThank For Using My ATM.  Have a Nice Day.  Good-Bye!");
                         System.exit(0);
                         break;
@@ -2412,7 +2418,7 @@ public int Decrypt(int number){
                     System.out.println(r);
                     break;
                 case 2:
-                    System.out.print("\nEnter Tax ID ");
+                    System.out.print("\nEnter Tax ID:  ");
                     String taxid1= scan.next();
 
                     this.generateMonthlyStatement(taxid1);
