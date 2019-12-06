@@ -1725,14 +1725,21 @@ public class App implements Testable
         double newmainbalance=0;
         String r= " ";
         String selectpaid = "SELECT A.AID FROM Account_Owns A, Pocket P WHERE A.ACC_TYPE='POCKET' AND A.AID=P.PAID AND A.AID= ? ";
+        //System.out.println("000000");
+
+
         try(PreparedStatement selectst= _connection.prepareStatement(selectpaid)){
+        //  System.out.println("000111");
             selectst.setString(1, pid);
             try (ResultSet resultSet = selectst.executeQuery()){
                 if(resultSet.next()){
+                //  System.out.println("03112300");
                     newpocketbalance=this.checkBalance(pid,amount+ (amount*0.03), "minus");
                     if(newpocketbalance> 0.01){
+                      //System.out.println("00023");
                         String update= "UPDATE Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
                         try (PreparedStatement updatepocket= _connection.prepareStatement(update)){
+                      //    System.out.println("01234");
                             updatepocket.setDouble(1, newpocketbalance);
                             updatepocket.setString(2, pid);
                             updatepocket.executeUpdate();
@@ -1740,6 +1747,7 @@ public class App implements Testable
                             newmainbalance= this.checkBalance(mainid, amount,"plus");
                             String updatemain= "Update Account_Owns A SET A.BAlANCE = ? WHERE A.AID = ?";
                             try(PreparedStatement updatemainacc = _connection.prepareStatement(updatemain)){
+                            //  System.out.println("9876");
                                 updatemainacc.setDouble(1, newmainbalance);
                                 updatemainacc.setString(2, mainid);
                                 updatemainacc.executeUpdate();
@@ -1758,19 +1766,22 @@ public class App implements Testable
                             return "1";
                         }
                     }else{
-                        r= "1";
+                        return "1";
                     }
-                }else {
-                    r="1";
+                }else{
+                    r= "1";
                 }
             }catch( SQLException e){
                 System.out.println("error 2");
+
+
                 System.err.println( e.getMessage() );
                 return "1";
             }
 
         }catch( SQLException e){
             System.out.println("error 1");
+              System.out.println("error 234");
             System.err.println( e.getMessage() );
             return "1";
         }
@@ -1778,8 +1789,10 @@ public class App implements Testable
 
 
 
-
+  //System.out.println("12345678");
+    //System.out.println(r +" " + newpocketbalance+" "+ newmainbalance);
         return r +" " + newpocketbalance+" "+ newmainbalance;
+
 
 
 
@@ -2025,7 +2038,7 @@ public int Decrypt(int number){
             System.out.print("\nPlease Choose From the Following Options:"
                     + "\n 1. Display Balance \n 2. Deposit"
                     + "\n 3. Withdraw\n 4. Top Up\n 5.Purchase\n 6.Transfer"
-                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10.Set Pin 11.Log Out\n\n");
+                    + "\n 7.Collect\n 8.Wire\n 9.Pay-Friend\n 10.Set Pin\n 11.Log Out\n\n");
 
             menuChoice = scan.nextInt();
 
@@ -2131,7 +2144,7 @@ public int Decrypt(int number){
                         String collecttoaccId = scan.next();
                         System.out.print("\nEnter Amount to Collect: ");
                         double collectAmt = scan.nextDouble();
-                        this.collect(collectfromaccId, collecttoaccId, collectAmt);
+                        this.collect(collecttoaccId,collectfromaccId , collectAmt);
                         System.out.println("Collect completed");
                         break;
                     case 8:
@@ -2539,7 +2552,7 @@ public int Decrypt(int number){
         int choice = 0;
         while (choice !=1 && choice!=2){
 
-            System.out.print("\n 1.Customer \n 2.Teller\n");
+            System.out.print("\n1.Customer \n2.Teller\n");
             choice = scan.nextInt();
             if(choice==1){
                 this.startAtm();
