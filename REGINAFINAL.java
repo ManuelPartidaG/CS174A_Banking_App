@@ -2220,7 +2220,7 @@ public class App implements Testable
         {
             System.out.print("\nPlease Choose From the Following Options:"
                     + "\n1.Display Balance \n2.Deposit"
-                    + "\n3.Withdraw\n 4.Top Up\n5.Purchase\n6.Transfer"
+                    + "\n3.Withdraw\n4.Top Up\n5.Purchase\n6.Transfer"
                     + "\n7.Collect\n8.Wire\n9.Pay-Friend\n10.Set in \n11.Log Out\n\n");
 
             menuChoice = scan.nextInt();
@@ -2378,7 +2378,7 @@ public class App implements Testable
             System.out.print("\nPlease Choose From the Following Options:"
                     + "\n1.Enter Check Transaction \n2.Generate Monthly Statement"
                     + "\n3.List Closed Accounts\n4.Generate Government Drug and Tax Evasion Report (DTER)\n5.Customer Report\n6.Add Interest"
-                    + "\n7.Create Account\n8.Delete Closed Accounts and Customers\n9.Delete Transactions\n10.Set Date\n11.Set Interest\n 12.Accrue Interest\n 13.Set Interest Rate\n 14.Log Out\n\n");
+                    + "\n7.Create Account\n8.Delete Closed Accounts and Customers\n9.Delete Transactions\n10.Set Date\n11.Set Interest\n12.Accrue Interest\n13.Set Interest Rate\n14.Log Out\n\n");
 
             menuChoice = scan.nextInt();
 
