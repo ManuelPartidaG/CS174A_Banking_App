@@ -1,4 +1,4 @@
-     public void populateTables(){
+       public void populateTables(){
         try (Statement statement = _connection.createStatement()) {
             //INSRTING CUSTOMERS
 
@@ -38,10 +38,10 @@
             this.accountUtility(AccountType.SAVINGS, "19023", 2300, "412231856", "San Francisco");
             this.accountUtility(AccountType.SAVINGS, "32156", 1000, "188212217", "Goleta");
             this.accountUtility(AccountType.INTEREST_CHECKING, "76543", 8456, "212116070", "Santa Barbara");
-            this.createPocketAccount( "53027", "12121", 50, "207843218", "Goleta" );
-            this.createPocketAccount( "60413","43942", 20, "400651982", "Santa Cruz");
-            this.createPocketAccount( "43947", "29107", 30, "212116070", "Isla Vista" );
-            this.createPocketAccount( "67521","19023", 100, "401605312", "Santa Barbara" );
+            this.createutilityPocketAccount( "53027", "12121", 50, "207843218", "Goleta" );
+            this.createutilityPocketAccount( "60413","43942", 20, "400651982", "Santa Cruz");
+            this.createutilityPocketAccount( "43947", "29107", 30, "212116070", "Isla Vista" );
+            this.createutilityPocketAccount( "67521","19023", 100, "401605312", "Santa Barbara" );
 
             //ADDING CO_OWNERS
 
