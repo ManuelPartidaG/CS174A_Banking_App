@@ -1,4 +1,4 @@
-    public void populateTables(){
+     public void populateTables(){
         try (Statement statement = _connection.createStatement()) {
             //INSRTING CUSTOMERS
 
@@ -10,8 +10,8 @@
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Elizabeth Sailor', '122219876', '4321 State St', 96400)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Fatal Castro', '401605312', '3756 La Cumbre Plaza', 204825)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('George Brush', '201674933', '5346 Foothill Av', 245600)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Hurryson Ford', '212431965', '678 State St', 2353)");
-            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Ivan Lendme', '322175130', '1235 Johnson Dr', 88300)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Hurryson Ford', '212431965', '678 State St', 88300)");
+            statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Ivan Lendme', '322175130', '1235 Johnson Dr', 211775)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Joe Pepsi', '344151573', '3210 State St', 92300)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Kelvin Costner', '209378521', 'Santa Cruz #3579', 116475)");
             statement.executeUpdate("INSERT INTO Customer(name,taxid,address, PIN) VALUES ('Li Kung', '212116070', '2 People''s Rd Beijing', 229325)");
